@@ -1,0 +1,35 @@
+/* IJR 9 — monochrome typographic refinement, preserving established learning hub */
+:root {--cad-ink:#141414;--cad-muted:#5e6268;--cad-rule:#d8dbe0;--cad-paper:#fff;--cad-soft:#f8f8f7}
+html {font-size:16px;scroll-padding-top:88px}
+body {font-family:Inter,"Segoe UI",Arial,sans-serif;font-size:1rem;line-height:1.66;font-feature-settings:"kern" 1,"liga" 1;letter-spacing:-.004em}
+h1,h2,h3,h4,.brand strong {font-family:Inter,"Segoe UI",Arial,sans-serif;text-wrap:balance;color:var(--cad-ink);font-weight:780}
+.hub-overview h1,.theory-hero h1,.workshop-hero h1{letter-spacing:-.058em;line-height:1.04;font-weight:820}
+.hub-topic-card h2{font-weight:780;line-height:1.14;letter-spacing:-.032em}
+.hub-overview p,.hub-topic-card p,.theory-hero p,.workshop-hero p,.concept-card p,.learning-goals-panel p {line-height:1.72;overflow-wrap:anywhere}
+.eyebrow{font-size:.72rem;letter-spacing:.11em;font-weight:790;color:#545454}
+.hub-topic-card{min-height:320px;gap:16px;padding:clamp(20px,2.5vw,30px)}
+.hub-topic-top{gap:12px}.hub-topic-number{font-variant-numeric:tabular-nums}
+.hub-topic-status{font-weight:740;font-size:.7rem}
+.hub-overview,.theory-hero,.workshop-hero{border-color:#242424}
+.hub-topic-actions .button{min-height:43px;font-size:.83rem}
+.button:focus-visible,.crumb-link:focus-visible,.quiz-option:focus-within{outline:3px solid #777;outline-offset:3px}
+.concept-card{min-height:210px;background:#fff}
+.concept-card h3{font-weight:760;letter-spacing:-.018em}
+.concept-card p{font-size:.97rem;color:#343434}
+.cad-detail{border-top:1px solid #d6d6d6;margin-top:36px;padding-top:30px}
+.cad-detail .section-heading{margin-bottom:22px}
+.cad-steps{list-style:none;margin:0 0 24px;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.cad-steps li{border:1px solid var(--cad-rule);background:#fff;padding:20px;display:flex;align-items:flex-start;gap:15px;min-width:0}
+.cad-steps li>span{font-family:Consolas,monospace;font-size:.8rem;color:#666;border:1px solid #ccc;padding:5px 8px;flex:0 0 auto}
+.cad-steps li p{margin:0;color:#282828;font-size:.96rem;line-height:1.66}
+.cad-detail-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.cad-detail-card{border:1px solid var(--cad-rule);padding:22px;background:#f9f9f8}
+.cad-detail-card p{font-size:.94rem;line-height:1.7;margin:12px 0 0;color:#333}
+.cad-detail-card:last-child{background:#fff;border-left:3px solid #555}
+.assessment-question{font-size:clamp(1.15rem,2.2vw,1.48rem);line-height:1.35}
+.quiz-option{line-height:1.55;font-size:.96rem;border-color:#d5d5d5;border-radius:5px}
+.quiz-option input{margin-top:4px}
+.answer-report{line-height:1.7}
+@media(max-width:900px){.cad-detail-grid{grid-template-columns:1fr}.cad-steps{grid-template-columns:1fr}}
+@media(max-width:600px){.hub-shell{padding:20px 14px}.hub-overview,.theory-hero,.workshop-hero{padding:22px}.hub-overview h1{font-size:clamp(2.1rem,10vw,3.2rem)}.cad-steps li,.cad-detail-card{padding:16px}.hub-topic-actions{flex-wrap:wrap}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}
