@@ -3,16 +3,37 @@
 "use strict";
 const D=window.IJRDiagnostic;
 const $=id=>document.getElementById(id);
-const state=D.load(localStorage);
+let activeCode=D.getActiveCode(localStorage);
+let state=activeCode?D.loadForCode(localStorage,activeCode):{answers:{},submitted:false,submittedAt:null};
 let current=0;
 
 function persist(){
- try{localStorage.setItem(D.KEY,JSON.stringify(state));return true}catch{return false}
+ return activeCode?D.saveForCode(localStorage,activeCode,state):false
 }
 function show(){
  document.querySelectorAll('#overview,#theory,#workshop,#lab,#diagnostic').forEach(node=>node.classList.toggle('app-hidden',node.id!=='diagnostic'));
  window.scrollTo(0,0);
  render();
+}
+function setStudentView(){
+ const ready=Boolean(activeCode);
+ $("diagnosticIdentity").classList.toggle("app-hidden",ready);
+ $("diagnosticActiveStudent").classList.toggle("app-hidden",!ready);
+ $("diagnosticStudentCode").textContent=ready?"Código activo: "+activeCode:"";
+ $("diagnosticNav").classList.toggle("app-hidden",!ready);
+ $("diagnosticBody").classList.toggle("app-hidden",!ready);
+ $("diagnosticPrev").classList.toggle("app-hidden",!ready);
+ $("diagnosticNext").classList.toggle("app-hidden",!ready);
+ $("diagnosticSubmit").classList.toggle("app-hidden",!ready);
+ $("diagnosticGoCAD").classList.add("app-hidden");
+ $("diagnosticExport").classList.add("app-hidden");
+ if(!ready){
+   $("diagnosticCode").value="";
+   $("diagnosticIdentityStatus").textContent="El identificador separa los resultados de cada estudiante en este equipo.";
+   $("diagnosticCounter").textContent="0 / "+D.questions.length;
+   $("diagnosticBar").style.width="0%";
+ }
+ return ready;
 }
 function questionNavigation(){
  const nav=$("diagnosticNav");nav.replaceChildren();
@@ -68,7 +89,14 @@ function summary(){
  const node=$('diagnosticBody');node.replaceChildren();
  const badge=document.createElement('p');badge.className="eyebrow";badge.textContent="RESULTADOS · DIAGNÓSTICO FORMATIVO";node.append(badge);
  const score=document.createElement('h2');score.className='diagnostic-total';score.textContent=e.correct+" / "+e.total+" respuestas correctas";node.append(score);
- const copy=document.createElement('p');copy.textContent="Tu evaluación inicial está registrada. No se exige una nota mínima: su propósito es identificar fortalezas y oportunidades de mejora antes de comenzar CAD.";node.append(copy);
+ const p=D.profile(state.answers);
+ const copy=document.createElement('p');copy.textContent="Tu evaluación inicial está registrada. El perfil muestra las competencias observadas en esta actividad, no una etiqueta permanente. No existe nota mínima para ingresar a CAD.";node.append(copy);
+ const profile=document.createElement("section");profile.className="diagnostic-profile";
+ const profileTag=document.createElement("p");profileTag.className="eyebrow";profileTag.textContent="PERFIL INDIVIDUAL · "+activeCode;
+ const level=document.createElement("h3");level.textContent=p.level+" · "+p.percent+"%";
+ const interpretation=document.createElement("p");interpretation.textContent=p.interpretation;
+ const strong=document.createElement("p");strong.textContent="Fortalezas relativas: "+p.strongest.join(" y ")+".";
+ profile.append(profileTag,level,interpretation,strong);node.append(profile);
  const groups=document.createElement('div');groups.className='diagnostic-results';
  e.breakdown.forEach(group=>{
   const item=document.createElement('article');item.className='diagnostic-result-card';
@@ -78,6 +106,12 @@ function summary(){
   const advice=document.createElement('p');advice.textContent=group.correct===group.total?'Fortaleza inicial.':group.correct>=2?'Repasa los conceptos y analiza tus errores.':'Se recomienda reforzar este tema con ejercicios introductorios.';
   item.append(title,text,bar,advice);groups.append(item);
  });node.append(groups);
+ const recommend=document.createElement("section");recommend.className="diagnostic-recommendations";
+ const heading=document.createElement("h3");heading.textContent="Actividades recomendadas para comenzar";
+ recommend.append(heading);
+ if(p.priorities.length===0){const text=document.createElement("p");text.textContent="No se detectaron áreas bajo el umbral orientativo de 75%. Continúa con tareas de profundización.";recommend.append(text)}
+ else p.priorities.forEach((priority,i)=>{const item=document.createElement("p");item.textContent=(i+1)+". "+priority.category+" ("+priority.percent+"%): "+priority.activity;recommend.append(item)});
+ node.append(recommend);
  const details=document.createElement('details');details.className='diagnostic-review';
  const caption=document.createElement('summary');caption.textContent='Consultar explicación de todas las preguntas';details.append(caption);
  D.questions.forEach(q=>{
@@ -89,9 +123,11 @@ function summary(){
  $('diagnosticNext').classList.add('app-hidden');
  $('diagnosticSubmit').classList.add('app-hidden');
  $('diagnosticGoCAD').classList.remove('app-hidden');
+ $('diagnosticExport').classList.remove('app-hidden');
  $('diagnosticNotice').textContent='Diagnóstico guardado localmente. Puedes comenzar la Unidad 1.';
 }
 function render(){
+ if(!setStudentView())return;
  questionNavigation();
  $('diagnosticPrev').classList.remove('app-hidden');
  $('diagnosticNext').classList.remove('app-hidden');
@@ -109,10 +145,28 @@ function finish(){
 }
 function updateCard(){
  const status=$('diagnosticCardStatus');
- if(status)status.textContent=state.submitted?'DIAGNÓSTICO COMPLETADO':'DIAGNÓSTICO PENDIENTE';
+ if(status)status.textContent=activeCode&&state.submitted?'DIAGNÓSTICO COMPLETADO':'DIAGNÓSTICO PENDIENTE';
  const btn=$('openDiagnostic');
- if(btn)btn.textContent=state.submitted?'Ver resultados del Módulo 0':'Iniciar Módulo 0 →';
+ if(btn)btn.textContent=activeCode&&state.submitted?'Ver perfil del Módulo 0':'Iniciar Módulo 0 →';
 }
+function selectStudent(){
+ const code=D.cleanCode($("diagnosticCode").value);
+ if(!code){$("diagnosticIdentityStatus").textContent="Utiliza entre 3 y 20 letras, números, guiones o guiones bajos. Evita nombres y datos personales.";return}
+ activeCode=code;state=D.loadForCode(localStorage,code);
+ if(!D.saveForCode(localStorage,code,state)){$("diagnosticIdentityStatus").textContent="No se pudo guardar. Habilita el almacenamiento local.";return}
+ // Isolate CAD evidence and progression by student code; reinitialize application state on next load.
+ location.reload();
+}
+$("diagnosticSelect").addEventListener("click",selectStudent);
+$("diagnosticCode").addEventListener("keydown",event=>{if(event.key==="Enter")selectStudent()});
+$("diagnosticSwitch").addEventListener("click",()=>{activeCode=null;state={answers:{},submitted:false,submittedAt:null};try{localStorage.removeItem(D.ACTIVE_KEY)}catch{}location.reload()});
+$("diagnosticExport").addEventListener("click",()=>{
+ if(!activeCode||!state.submitted)return;
+ const record=D.exportRecord(activeCode,state.answers,state.submittedAt);
+ const blob=new Blob([JSON.stringify(record,null,2)],{type:"application/json"});
+ const url=URL.createObjectURL(blob),link=document.createElement("a");link.href=url;link.download="diagnostico_9_"+activeCode+".json";
+ document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+});
 $('openDiagnostic').addEventListener('click',show);
 $('fromDiagnostic').addEventListener('click',()=>{if(!state.submitted)$('diagnosticNotice').textContent='Puedes volver luego: tus respuestas quedan guardadas en este dispositivo.';window.returnCADHome?.()});
 $('diagnosticPrev').addEventListener('click',()=>{if(current>0){current--;render()}});
