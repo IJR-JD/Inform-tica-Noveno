@@ -1,0 +1,44 @@
+/* Readability and exercise gating refinements — IJR CAD 9, keep the unified monochrome layout */
+html{font-size:18px}
+body{font-size:1.05rem;line-height:1.72}
+.hub-shell{max-width:1560px}
+.hub-overview{grid-template-columns:minmax(0,1.3fr) minmax(260px,.48fr);padding:clamp(28px,3.5vw,52px)}
+.hub-topic-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:22px}
+.hub-topic-card{padding:clamp(25px,3vw,38px);min-height:350px}
+.hub-topic-card h2{font-size:clamp(1.55rem,2.5vw,2.2rem)}
+.hub-topic-card p,.theory-hero-copy p,.concept-card p,.cad-steps li p,.cad-detail-card p,.learning-goals-panel p{font-size:1.05rem;line-height:1.75}
+.hub-topic-number{font-size:1.12rem}
+.hub-topic-status{font-size:.76rem;max-width:60%;text-align:right;line-height:1.4}
+.hub-topic-progress strong{font-size:2.3rem}
+.section-heading h2{font-size:clamp(1.9rem,3vw,3rem)}
+.concept-card{padding:clamp(24px,2.3vw,34px)}
+.concept-card h3,.cad-detail-card h3{font-size:1.22rem}
+.concept-card>span,.eyebrow{font-size:.78rem}
+.button,.hub-topic-actions .button{font-size:.93rem;min-height:48px;padding:12px 20px}
+.topbar{min-height:79px}
+.brand small{font-size:.68rem}.brand strong{font-size:1rem}
+.crumb-link{font-size:.95rem}
+.cad-steps{gap:16px}.cad-steps li{padding:25px}
+.cad-steps li>span{font-size:.95rem}
+.cad-detail-card{padding:25px}
+.hub-topic-card.locked{background:#f8f8f7;color:#535353}
+.hub-topic-card.locked h2{color:#494949}
+.hub-topic-card.locked .hub-topic-status{color:#585858}
+.hub-topic-card button:disabled,.theory-navigation button:disabled,.theory-hero button:disabled,.cad-submission button:disabled{cursor:not-allowed;opacity:.44;transform:none}
+.quiz-option{font-size:1.06rem;padding:18px 19px;display:flex;gap:10px;align-items:flex-start}
+.quiz-option input{width:19px;height:19px;flex-shrink:0}
+.assessment-question{font-size:clamp(1.35rem,2.5vw,1.85rem);line-height:1.4}
+.lab-zone{padding:clamp(22px,3vw,40px)}
+.cad-submission{margin-top:38px;border:1px solid #242424;background:#fff;padding:clamp(24px,3vw,42px);display:grid;gap:14px}
+.cad-submission label:not(.cad-confirm){font-size:1.03rem;font-weight:700}
+.cad-submission textarea,.cad-submission input[type="text"]{display:block;width:100%;max-width:100%;box-sizing:border-box;border:1px solid #9d9d9d;border-radius:4px;padding:15px 18px;background:#fbfbfb;color:#171717;font:inherit;font-size:1.07rem;line-height:1.6}
+.cad-submission textarea{min-height:168px;resize:vertical}
+.cad-submission :is(textarea,input):focus-visible{outline:3px solid #555;outline-offset:2px}
+.cad-confirm{display:flex;gap:14px;align-items:flex-start;border:1px solid #d6d6d6;padding:17px;line-height:1.55}
+.cad-confirm input{width:23px;height:23px;flex-shrink:0;accent-color:#111}
+.cad-status{font-size:1rem;line-height:1.6;color:#333;margin:0}
+#unlockStatus{font-weight:750;border-top:1px solid #ddd;padding-top:15px}
+#continueNext{justify-self:start}
+@media(max-width:960px){.hub-topic-grid{grid-template-columns:1fr}.hub-overview{grid-template-columns:1fr}}
+@media(max-width:800px){html{font-size:17px}.hub-shell{padding:24px 18px}.cad-steps{grid-template-columns:1fr}.cad-detail-grid{grid-template-columns:1fr}.hub-topic-card{min-height:300px}.topbar{flex-wrap:wrap}}
+@media(max-width:480px){.hub-overview,.theory-hero,.workshop-hero{padding:24px}.hub-topic-card{padding:23px}.cad-submission{padding:20px}.theory-hero-actions,.theory-navigation{flex-wrap:wrap}}
