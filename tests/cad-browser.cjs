@@ -37,7 +37,7 @@ const assert=require("node:assert/strict");
  await page.locator("#openDiagnostic").click();
  await page.locator("#diagnosticEmail").fill("test1@gmail.com");
  await page.locator("#diagnosticSend").click();
- assert.ok((await page.locator("#diagnosticIdentityStatus").textContent()).includes("institucional"),"Reject non-school email");
+ assert.ok((await page.locator("#diagnosticIdentityStatus").textContent()).includes("@ijr.edu.co"),"Reject non-school email");
  await page.locator("#diagnosticEmail").fill("test1@ijr.edu.co");
  await page.locator("#diagnosticSend").click();
  await page.locator("#diagnosticOtpPanel").waitFor({state:"visible"});
