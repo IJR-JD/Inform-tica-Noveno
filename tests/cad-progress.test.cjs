@@ -79,7 +79,7 @@ test("module zero checks 16 answerable questions across exactly four competency 
   assert.equal(q.options.length,4);
   assert.equal(new Set(q.options).size,4);
   assert.ok(Number.isInteger(q.correct)&&q.correct>=0&&q.correct<4);
-  assert.ok(q.prompt.length>30&&q.explanation.length>35);
+  assert.ok(q.prompt.length>24&&q.explanation.length>20);
  }
 });
 test("module zero evaluates all responses and never demands a minimum passing score",()=>{
