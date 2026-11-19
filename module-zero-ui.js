@@ -1,177 +1,182 @@
-/* Module 0 view controller — reuses the consolidated monochrome Learning Hub */
+/* Módulo 0 — Supabase-authenticated institutional email / formative diagnostic. */
 (function(){
-"use strict";
-const D=window.IJRDiagnostic;
-const $=id=>document.getElementById(id);
-let activeCode=D.getActiveCode(localStorage);
-let state=activeCode?D.loadForCode(localStorage,activeCode):{answers:{},submitted:false,submittedAt:null};
-let current=0;
-
-function persist(){
- return activeCode?D.saveForCode(localStorage,activeCode,state):false
-}
-function show(){
- document.querySelectorAll('#overview,#theory,#workshop,#lab,#diagnostic').forEach(node=>node.classList.toggle('app-hidden',node.id!=='diagnostic'));
- window.scrollTo(0,0);
- render();
-}
-function setStudentView(){
- const ready=Boolean(activeCode);
- $("diagnosticIdentity").classList.toggle("app-hidden",ready);
- $("diagnosticActiveStudent").classList.toggle("app-hidden",!ready);
- $("diagnosticStudentCode").textContent=ready?"Código activo: "+activeCode:"";
- $("diagnosticNav").classList.toggle("app-hidden",!ready);
- $("diagnosticBody").classList.toggle("app-hidden",!ready);
- $("diagnosticPrev").classList.toggle("app-hidden",!ready);
- $("diagnosticNext").classList.toggle("app-hidden",!ready);
- $("diagnosticSubmit").classList.toggle("app-hidden",!ready);
- $("diagnosticGoCAD").classList.add("app-hidden");
- $("diagnosticExport").classList.add("app-hidden");
- if(!ready){
-   $("diagnosticCode").value="";
-   $("diagnosticIdentityStatus").textContent="El identificador separa los resultados de cada estudiante en este equipo.";
-   $("diagnosticCounter").textContent="0 / "+D.questions.length;
-   $("diagnosticBar").style.width="0%";
+ "use strict";
+ const D=window.IJRDiagnostic,A=window.IJRCADAuth,$=id=>document.getElementById(id);
+ const DRAFT_PREFIX="ijr-cad9-draft-auth-v1-";
+ let state={answers:{},submitted:false,submittedAt:null},current=0,pendingEmail="",saving=false;
+ const ident=$("diagnosticIdentity"),nav=$("diagnosticNav"),body=$("diagnosticBody");
+ const notice=$("diagnosticNotice"),status=$("diagnosticIdentityStatus");
+ function setStatus(message){status.textContent=message}
+ function setNotice(message){notice.textContent=message}
+ function reportError(err){return err?.message||"No se pudo completar la operación."}
+ function hide(el,on){el.classList.toggle("app-hidden",on)}
+ function draftKey(){return A.user?DRAFT_PREFIX+A.user.id:null}
+ function saveDraft(){
+  const key=draftKey();if(!key)return;
+  try{localStorage.setItem(key,JSON.stringify({answers:D.validAnswers(state.answers)}))}catch{}
  }
- return ready;
-}
-function questionNavigation(){
- const nav=$("diagnosticNav");nav.replaceChildren();
- if(state.submitted){nav.classList.add("app-hidden");return}
- nav.classList.remove("app-hidden");
- const label=document.createElement("p");label.className="eyebrow";label.textContent="SALTA A UNA PREGUNTA · ✓ RESPONDIDA";nav.append(label);
- const group=document.createElement("div");group.className="diagnostic-nav-grid";
- D.questions.forEach((q,i)=>{
-   const btn=document.createElement("button");btn.type="button";btn.className="diagnostic-nav-button";
-   const answered=Number.isInteger(state.answers[q.id]);
-   btn.textContent=String(i+1).padStart(2,"0")+(answered?" ✓":"");
-   btn.setAttribute("aria-label","Pregunta "+(i+1)+(answered?", respondida":", sin responder"));
-   btn.setAttribute("aria-current",i===current?"step":"false");
-   if(answered)btn.classList.add("is-answered");
-   if(i===current)btn.classList.add("is-current");
-   btn.onclick=()=>{current=i;render()};
-   group.append(btn);
- });nav.append(group);
-}
-function questionUI(){
- const q=D.questions[current],value=state.answers[q.id];
- const frame=$('diagnosticBody');
- frame.replaceChildren();
- const tag=document.createElement('p');tag.className="eyebrow";tag.textContent=q.category+" · PREGUNTA "+(current+1)+" DE "+D.questions.length;frame.append(tag);
- const heading=document.createElement('h2');heading.textContent=q.prompt;frame.append(heading);
- frame.append(window.IJRVisuals.build(q.id));
- const opts=document.createElement('div');opts.className="diagnostic-options";
- q.options.forEach((option,index)=>{
-  const label=document.createElement('label');label.className="diagnostic-choice";
-  const input=document.createElement('input');input.type='radio';input.name="diagnosticAnswer";input.value=index;input.checked=value===index;
-  input.addEventListener('change',()=>{
-   state.answers[q.id]=index;
-   if(!persist())$('diagnosticNotice').textContent="No se pudo guardar en el navegador. Revisa la configuración de almacenamiento.";
-   else $('diagnosticNotice').textContent="Respuesta guardada en este dispositivo.";
-   updateProgress();questionNavigation();
-  });
-  const copy=document.createElement('span');copy.textContent=option;
-  label.append(input,copy);opts.append(label);
- });
- frame.append(opts);
- $('diagnosticPrev').disabled=current===0;
- $('diagnosticNext').textContent=current===D.questions.length-1?'Revisar respuestas →':'Siguiente pregunta →';
-}
-function updateProgress(){
- const e=D.evaluate(state.answers);
- $('diagnosticCounter').textContent=e.answered+" / "+e.total+" respondidas";
- $('diagnosticBar').style.width=(e.answered/e.total*100)+"%";
- $('diagnosticSubmit').disabled=e.answered!==e.total;
- if(e.answered===e.total)$('diagnosticNotice').textContent='Todas las preguntas están respondidas. Puedes finalizar el diagnóstico.';
-}
-function summary(){
- const e=D.evaluate(state.answers);
- const node=$('diagnosticBody');node.replaceChildren();
- const badge=document.createElement('p');badge.className="eyebrow";badge.textContent="RESULTADOS · DIAGNÓSTICO FORMATIVO";node.append(badge);
- const score=document.createElement('h2');score.className='diagnostic-total';score.textContent=e.correct+" / "+e.total+" respuestas correctas";node.append(score);
- const p=D.profile(state.answers);
- const copy=document.createElement('p');copy.textContent="Tu evaluación inicial está registrada. El perfil muestra las competencias observadas en esta actividad, no una etiqueta permanente. No existe nota mínima para ingresar a CAD.";node.append(copy);
- const profile=document.createElement("section");profile.className="diagnostic-profile";
- const profileTag=document.createElement("p");profileTag.className="eyebrow";profileTag.textContent="PERFIL INDIVIDUAL · "+activeCode;
- const level=document.createElement("h3");level.textContent=p.level+" · "+p.percent+"%";
- const interpretation=document.createElement("p");interpretation.textContent=p.interpretation;
- const strong=document.createElement("p");strong.textContent="Fortalezas relativas: "+p.strongest.join(" y ")+".";
- profile.append(profileTag,level,interpretation,strong);node.append(profile);
- const groups=document.createElement('div');groups.className='diagnostic-results';
- e.breakdown.forEach(group=>{
-  const item=document.createElement('article');item.className='diagnostic-result-card';
-  const title=document.createElement('h3');title.textContent=group.category;
-  const text=document.createElement('p');text.textContent=group.correct+' de '+group.total+' respuestas correctas · '+group.percent+' %';
-  const bar=document.createElement('div');bar.className='progress-track';const fill=document.createElement('span');fill.style.width=group.percent+'%';bar.append(fill);
-  const advice=document.createElement('p');advice.textContent=group.correct===group.total?'Fortaleza inicial.':group.correct>=2?'Repasa los conceptos y analiza tus errores.':'Se recomienda reforzar este tema con ejercicios introductorios.';
-  item.append(title,text,bar,advice);groups.append(item);
- });node.append(groups);
- const recommend=document.createElement("section");recommend.className="diagnostic-recommendations";
- const heading=document.createElement("h3");heading.textContent="Actividades recomendadas para comenzar";
- recommend.append(heading);
- if(p.priorities.length===0){const text=document.createElement("p");text.textContent="No se detectaron áreas bajo el umbral orientativo de 75%. Continúa con tareas de profundización.";recommend.append(text)}
- else p.priorities.forEach((priority,i)=>{const item=document.createElement("p");item.textContent=(i+1)+". "+priority.category+" ("+priority.percent+"%): "+priority.activity;recommend.append(item)});
- node.append(recommend);
- const details=document.createElement('details');details.className='diagnostic-review';
- const caption=document.createElement('summary');caption.textContent='Consultar explicación de todas las preguntas';details.append(caption);
- D.questions.forEach(q=>{
-  const p=document.createElement('p');
-  p.textContent=(state.answers[q.id]===q.correct?'✓ ':'• ')+q.id+'. '+q.prompt+' Respuesta: '+q.options[q.correct]+'. '+q.explanation;
-  details.append(p);
- });node.append(details);
- $('diagnosticPrev').classList.add('app-hidden');
- $('diagnosticNext').classList.add('app-hidden');
- $('diagnosticSubmit').classList.add('app-hidden');
- $('diagnosticGoCAD').classList.remove('app-hidden');
- $('diagnosticExport').classList.remove('app-hidden');
- $('diagnosticNotice').textContent='Diagnóstico guardado localmente. Puedes comenzar la Unidad 1.';
-}
-function render(){
- if(!setStudentView())return;
- questionNavigation();
- $('diagnosticPrev').classList.remove('app-hidden');
- $('diagnosticNext').classList.remove('app-hidden');
- $('diagnosticSubmit').classList.remove('app-hidden');
- $('diagnosticGoCAD').classList.add('app-hidden');
- if(state.submitted)summary();else{questionUI();updateProgress()}
-}
-function finish(){
- const e=D.evaluate(state.answers);
- if(e.answered!==e.total){$('diagnosticNotice').textContent='Responde las 16 preguntas antes de finalizar.';return}
- state.submitted=true;state.submittedAt=new Date().toISOString();
- if(!persist()){state.submitted=false;$('diagnosticNotice').textContent='No se pudo guardar el diagnóstico. Habilita el almacenamiento local antes de continuar.';return}
- render();window.refreshCADHome?.();
- updateCard();
-}
-function updateCard(){
- const status=$('diagnosticCardStatus');
- if(status)status.textContent=activeCode&&state.submitted?'DIAGNÓSTICO COMPLETADO':'DIAGNÓSTICO PENDIENTE';
- const btn=$('openDiagnostic');
- if(btn)btn.textContent=activeCode&&state.submitted?'Ver perfil del Módulo 0':'Iniciar Módulo 0 →';
-}
-function selectStudent(){
- const code=D.cleanCode($("diagnosticCode").value);
- if(!code){$("diagnosticIdentityStatus").textContent="Utiliza entre 3 y 20 letras, números, guiones o guiones bajos. Evita nombres y datos personales.";return}
- activeCode=code;state=D.loadForCode(localStorage,code);
- if(!D.saveForCode(localStorage,code,state)){$("diagnosticIdentityStatus").textContent="No se pudo guardar. Habilita el almacenamiento local.";return}
- // Isolate CAD evidence and progression by student code; reinitialize application state on next load.
- location.reload();
-}
-$("diagnosticSelect").addEventListener("click",selectStudent);
-$("diagnosticCode").addEventListener("keydown",event=>{if(event.key==="Enter")selectStudent()});
-$("diagnosticSwitch").addEventListener("click",()=>{activeCode=null;state={answers:{},submitted:false,submittedAt:null};try{localStorage.removeItem(D.ACTIVE_KEY)}catch{}location.reload()});
-$("diagnosticExport").addEventListener("click",()=>{
- if(!activeCode||!state.submitted)return;
- const record=D.exportRecord(activeCode,state.answers,state.submittedAt);
- const blob=new Blob([JSON.stringify(record,null,2)],{type:"application/json"});
- const url=URL.createObjectURL(blob),link=document.createElement("a");link.href=url;link.download="diagnostico_9_"+activeCode+".json";
- document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
-});
-$('openDiagnostic').addEventListener('click',show);
-$('fromDiagnostic').addEventListener('click',()=>{if(!state.submitted)$('diagnosticNotice').textContent='Puedes volver luego: tus respuestas quedan guardadas en este dispositivo.';window.returnCADHome?.()});
-$('diagnosticPrev').addEventListener('click',()=>{if(current>0){current--;render()}});
-$('diagnosticNext').addEventListener('click',()=>{if(current<D.questions.length-1){current++;render()}else{const missing=D.questions.findIndex(q=>!Object.prototype.hasOwnProperty.call(state.answers,q.id));if(missing>=0){current=missing;render();$('diagnosticNotice').textContent='Completa esta pregunta pendiente antes de finalizar.'}else{$('diagnosticNotice').textContent='Todas las preguntas están contestadas. Pulsa Finalizar diagnóstico.';window.scrollTo(0,0)}}});
-$('diagnosticSubmit').addEventListener('click',finish);
-$('diagnosticGoCAD').addEventListener('click',()=>{window.returnCADHome?.();document.getElementById('topicGrid').scrollIntoView({behavior:'smooth'})});
-updateCard();
+ async function persistRemote(){
+  if(!A.authenticated)throw Error("Inicia sesión con tu correo institucional.");
+  const result=D.evaluate(state.answers);
+  await A.saveDiagnostic({answers:D.validAnswers(state.answers),submittedAt:state.submittedAt,profile:state.submitted?D.profile(state.answers):{}});
+  return result;
+ }
+ async function hydrate(){
+  if(!A.authenticated){state={answers:{},submitted:false,submittedAt:null};window.setDiagnosticComplete?.(false);await window.refreshStudentProgress?.();render();return}
+  state={answers:{},submitted:false,submittedAt:null};
+  try{
+   const row=await A.loadDiagnostic();
+   if(row){
+    state.answers=D.validAnswers(row.answers);
+    state.submitted=Boolean(row.submitted_at)&&D.evaluate(state.answers).answered===D.questions.length;
+    state.submittedAt=state.submitted?row.submitted_at:null;
+   }else{
+    const raw=JSON.parse(localStorage.getItem(draftKey())||"{}");
+    state.answers=D.validAnswers(raw.answers);
+   }
+  }catch(err){
+   setNotice("No se pudo cargar el perfil desde Supabase. Se requiere conexión para finalizar: "+reportError(err));
+   try{state.answers=D.validAnswers(JSON.parse(localStorage.getItem(draftKey())||"{}").answers)}catch{}
+  }
+  window.setDiagnosticComplete?.(state.submitted);
+  await window.refreshStudentProgress?.();
+  current=0;render();
+ }
+ function presentAuth(){
+  const logged=A.authenticated;
+  hide(ident,logged);hide($("diagnosticActiveStudent"),!logged);
+  $("diagnosticStudentCode").textContent=logged?"Correo verificado: "+A.user.email:"";
+  hide(nav,!logged||state.submitted);hide(body,!logged);
+  for(const id of ["diagnosticPrev","diagnosticNext","diagnosticSubmit"])hide($(id),!logged||state.submitted);
+  hide($("diagnosticGoCAD"),!logged||!state.submitted);
+  hide($("diagnosticExport"),!logged||!state.submitted);
+  if(!logged){$("diagnosticCounter").textContent="0 / "+D.questions.length;$("diagnosticBar").style.width="0%"}
+  $("diagnosticCardStatus").textContent=logged?(state.submitted?"PERFIL COMPLETADO":"EVALUACIÓN PENDIENTE"):"CORREO INSTITUCIONAL REQUERIDO";
+  $("openDiagnostic").textContent=logged&&state.submitted?"Consultar mi perfil":"Iniciar diagnóstico →";
+  return logged;
+ }
+ function view(){
+  document.querySelectorAll("#overview,#theory,#workshop,#lab,#diagnostic").forEach(el=>hide(el,el.id!=="diagnostic"));
+  window.scrollTo(0,0);render();
+ }
+ function questionNav(){
+  nav.replaceChildren();
+  const tag=document.createElement("p");tag.className="eyebrow";tag.textContent="PREGUNTAS · ✓ RESPONDIDA";nav.append(tag);
+  const grid=document.createElement("div");grid.className="diagnostic-nav-grid";
+  D.questions.forEach((q,i)=>{
+   const done=Object.hasOwn(state.answers,q.id),btn=document.createElement("button");btn.type="button";btn.className="diagnostic-nav-button";
+   if(done)btn.classList.add("is-answered");if(i===current)btn.classList.add("is-current");
+   btn.textContent=String(i+1).padStart(2,"0")+(done?" ✓":"");
+   btn.setAttribute("aria-label","Pregunta "+(i+1)+(done?", respondida":", pendiente"));
+   if(i===current)btn.setAttribute("aria-current","step");
+   btn.onclick=()=>{current=i;render()};grid.append(btn);
+  });nav.append(grid);
+ }
+ function question(){
+  body.replaceChildren();questionNav();
+  const q=D.questions[current],tag=document.createElement("p"),heading=document.createElement("h2");
+  tag.className="eyebrow";tag.textContent=q.category+" · PREGUNTA "+(current+1)+" DE "+D.questions.length;
+  heading.textContent=q.prompt;body.append(tag,heading,window.IJRVisuals.build(q.id));
+  const answers=document.createElement("div");answers.className="diagnostic-options";
+  q.options.forEach((option,i)=>{
+   const label=document.createElement("label");label.className="diagnostic-choice";
+   const input=document.createElement("input");input.type="radio";input.name="diagnosticAnswer";input.value=i;input.checked=state.answers[q.id]===i;
+   input.onchange=()=>{
+    state.answers[q.id]=i;saveDraft();updateProgress();questionNav();setNotice("Respuesta guardada como borrador. Se sincronizará al finalizar.");
+   };
+   const copy=document.createElement("span");copy.textContent=option;label.append(input,copy);answers.append(label);
+  });body.append(answers);
+  $("diagnosticPrev").disabled=current===0;
+  $("diagnosticNext").textContent=current===D.questions.length-1?"Revisar respuestas →":"Siguiente pregunta →";
+  updateProgress();
+ }
+ function updateProgress(){
+  const e=D.evaluate(state.answers);
+  $("diagnosticCounter").textContent=e.answered+" / "+e.total+" respondidas";
+  $("diagnosticBar").style.width=Math.round(100*e.answered/e.total)+"%";
+  $("diagnosticSubmit").disabled=saving||e.answered!==e.total||!A.authenticated;
+ }
+ function summary(){
+  body.replaceChildren();const e=D.evaluate(state.answers),p=D.profile(state.answers);
+  const tag=document.createElement("p");tag.className="eyebrow";tag.textContent="PERFIL DIAGNÓSTICO · "+A.user.email;body.append(tag);
+  const heading=document.createElement("h2");heading.className="diagnostic-total";heading.textContent=e.correct+" / "+e.total+" respuestas correctas";body.append(heading);
+  const explanation=document.createElement("p");explanation.textContent="Resultados orientativos por competencia. No hay nota mínima y no constituyen una clasificación permanente.";body.append(explanation);
+  const profile=document.createElement("section");profile.className="diagnostic-profile";
+  const ptitle=document.createElement("h3");ptitle.textContent=p.level+" · "+p.percent+"%";
+  const pdesc=document.createElement("p");pdesc.textContent=p.interpretation;
+  const best=document.createElement("p");best.textContent="Fortalezas relativas: "+p.strongest.join(" y ")+".";
+  profile.append(ptitle,pdesc,best);body.append(profile);
+  const grid=document.createElement("div");grid.className="diagnostic-results";
+  p.domains.forEach(g=>{
+   const item=document.createElement("article");item.className="diagnostic-result-card";
+   const h=document.createElement("h3");h.textContent=g.category;
+   const val=document.createElement("p");val.textContent=g.correct+" de "+g.total+" · "+g.percent+"%";
+   const bar=document.createElement("div");bar.className="progress-track";const fill=document.createElement("span");fill.style.width=g.percent+"%";bar.append(fill);
+   item.append(h,val,bar);grid.append(item);
+  });body.append(grid);
+  const recommend=document.createElement("section");recommend.className="diagnostic-recommendations";
+  const title=document.createElement("h3");title.textContent="Actividades recomendadas";recommend.append(title);
+  if(!p.priorities.length){const row=document.createElement("p");row.textContent="Todas las competencias superaron el umbral orientativo de refuerzo. Continúa con ejercicios de profundización.";recommend.append(row)}
+  p.priorities.forEach((r,i)=>{const row=document.createElement("p");row.textContent=(i+1)+". "+r.category+" ("+r.percent+"%): "+r.activity;recommend.append(row)});
+  body.append(recommend);
+  const details=document.createElement("details");details.className="diagnostic-review";
+  const label=document.createElement("summary");label.textContent="Revisar respuestas y explicaciones";details.append(label);
+  D.questions.forEach(q=>{const para=document.createElement("p");para.textContent=(state.answers[q.id]===q.correct?"✓ ":"• ")+q.id+". "+q.prompt+" Respuesta: "+q.options[q.correct]+". "+q.explanation;details.append(para)});
+  body.append(details);
+  $("diagnosticCounter").textContent=e.total+" / "+e.total+" respondidas";
+  $("diagnosticBar").style.width="100%";
+  setNotice("Diagnóstico guardado en Supabase bajo tu cuenta institucional.");
+ }
+ function render(){if(!presentAuth())return;if(state.submitted)summary();else question()}
+ async function send(){
+  const email=A.normalizeEmail($("diagnosticEmail").value);
+  if(!A.validEmail(email)){setStatus("Utiliza un correo @"+A.DOMAIN+".");return}
+  $("diagnosticSend").disabled=true;setStatus("Solicitando verificación…");
+  try{pendingEmail=await A.requestOtp(email);hide($("diagnosticOtpPanel"),false);setStatus("Revisa tu correo institucional. Introduce el código temporal recibido; si llegó un enlace, puede ser necesario activar el formato OTP en Supabase Auth.");$("diagnosticOtp").focus()}
+  catch(e){setStatus(reportError(e))}
+  finally{$("diagnosticSend").disabled=false}
+ }
+ async function verify(){
+  if(!pendingEmail){setStatus("Solicita primero un código al correo institucional.");return}
+  $("diagnosticVerify").disabled=true;setStatus("Verificando correo…");
+  try{await A.verifyOtp(pendingEmail,$("diagnosticOtp").value);await hydrate();setStatus("Correo institucional verificado.");}
+  catch(e){setStatus(reportError(e))}
+  finally{$("diagnosticVerify").disabled=false}
+ }
+ async function finish(){
+  if(!A.authenticated||saving)return;
+  const e=D.evaluate(state.answers);if(e.answered!==e.total){setNotice("Responde las "+e.total+" preguntas antes de finalizar.");return}
+  saving=true;$("diagnosticSubmit").disabled=true;
+  const date=new Date().toISOString();
+  try{
+   await A.saveDiagnostic({answers:D.validAnswers(state.answers),submittedAt:date,profile:D.profile(state.answers)});
+   state.submitted=true;state.submittedAt=date;
+   window.setDiagnosticComplete?.(true);render();
+  }catch(err){setNotice("No se guardó el resultado en Supabase. Vuelve a intentarlo: "+reportError(err))}
+  finally{saving=false;updateProgress()}
+ }
+ $("openDiagnostic").onclick=view;
+ $("fromDiagnostic").onclick=()=>window.returnCADHome?.();
+ $("diagnosticSend").onclick=send;
+ $("diagnosticVerify").onclick=verify;
+ $("diagnosticEmail").onkeydown=e=>{if(e.key==="Enter")send()};
+ $("diagnosticOtp").onkeydown=e=>{if(e.key==="Enter")verify()};
+ $("diagnosticSwitch").onclick=async()=>{await A.signOut();location.reload()};
+ $("diagnosticPrev").onclick=()=>{if(current>0){current--;render()}};
+ $("diagnosticNext").onclick=()=>{
+  if(current<D.questions.length-1){current++;render();return}
+  const missing=D.questions.findIndex(q=>!Object.hasOwn(state.answers,q.id));
+  if(missing>=0){current=missing;render();setNotice("Completa la pregunta pendiente.");return}
+  setNotice("Todas las preguntas están respondidas. Selecciona Finalizar diagnóstico.");
+ };
+ $("diagnosticSubmit").onclick=finish;
+ $("diagnosticGoCAD").onclick=()=>{window.returnCADHome?.();$("topicGrid").scrollIntoView({behavior:"smooth"})};
+ $("diagnosticExport").onclick=()=>{
+  if(!state.submitted||!A.authenticated)return;
+  const record={version:3,institutionalEmail:A.user.email,module:"Diagnóstico de habilidades fundamentales",submittedAt:state.submittedAt,profile:D.profile(state.answers),answers:D.validAnswers(state.answers)};
+  const blob=new Blob([JSON.stringify(record,null,2)],{type:"application/json"}),url=URL.createObjectURL(blob);
+  const link=document.createElement("a");link.href=url;link.download="diagnostico_9_perfil.json";document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+ };
+ A.init().then(hydrate).catch(err=>{setStatus("No se pudo iniciar la autenticación: "+reportError(err));render()});
+ render();
 })();
