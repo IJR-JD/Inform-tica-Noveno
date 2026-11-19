@@ -26,11 +26,22 @@ const objects=[
   shell(txt(35,35,'Vista frontal: ancho y altura')+rect(99,73,300,121,'class="v-object"')+line(99,58,399,58,'class="v-dim"')+line(99,51,99,65,'class="v-dim"')+line(399,51,399,65,'class="v-dim"')+txt(231,48,'40 mm')+line(414,73,414,194,'class="v-dim"')+txt(433,140,'25 mm')+txt(171,233,'Profundidad: no visible'),'Vista frontal de bloque con 40 milímetros de ancho y 25 de altura; profundidad no visible'),
   shell(txt(35,35,'Rotación rígida · observa la orientación')+cube+txt(48,230,'Girar no cambia el volumen.'),'Cubo que rota suavemente, conservando las dimensiones y el volumen')
 ];
+objects.push(
+  shell(defs+txt(35,35,'Algoritmo: instrucciones en orden')+rect(52,82,118,99,'class="v-guide"')+txt(62,108,'3 pasos')+arrow(174,129,247,129)+rect(252,82,110,99,'class="v-object"')+txt(262,108,'Giro 90°')+arrow(367,129,435,129)+txt(368,178,'FIN'),'Esquema de avance seguido por un giro de noventa grados'),
+  shell(txt(30,36,'Descomposición: divide para resolver')+rect(44,70,158,132,'class="v-guide"')+txt(58,100,'PROBLEMA')+arrow(208,134,257,134)+[0,1,2].map((n)=>rect(270,67+n*52,180,40,'class="v-object"')+txt(282,93+n*52,'Subtarea '+(n+1))).join(''),'Problema grande dividido en tres tareas pequeñas'),
+  shell(defs+txt(32,36,'Decisión: detectar y actuar')+rect(43,88,150,100,'class="v-guide"')+txt(54,119,'¿Obstáculo?')+arrow(194,140,260,140)+rect(270,90,185,95,'class="v-object"')+txt(288,126,'Si: detener')+txt(289,155,'No: continuar'),'Condición de sensor con dos posibles acciones'),
+  shell(txt(32,38,'Repetición controlada · cinco ciclos')+Array.from({length:5},(_,n)=>rect(50+n*90,95,58,65,'class="v-object v-rise"')+txt(68+n*90,183,String(n+1))).join('')+txt(115,218,'Una pieza en cada iteración'),'Cinco objetos colocados uno por cada repetición'),
+  shell(txt(32,40,'Comparación de longitudes medidas')+[12,15,18].map((n,i)=>rect(80,70+i*52,n*17,27,'class="v-object"')+txt(90+n*17,90+i*52,n+' mm')).join(''),'Tres barras con valores de doce quince y dieciocho milímetros'),
+  shell(txt(33,36,'Escala 1:2 · dibujo / realidad')+line(58,106,206,106,'class="v-thick"')+line(58,169,354,169,'class="v-thick"')+txt(220,111,'4 cm en plano')+txt(368,174,'8 cm reales')+txt(33,222,'La dimensión real es el doble del dibujo.'),'Segmentos de longitud uno a dos, cuatro y ocho centímetros'),
+  shell(txt(30,40,'Duración de tres intentos')+[20,15,25].map((n,i)=>rect(80,82+i*48,n*11,25,'class="v-object"')+txt(92+n*11,100+i*48,n+' min')).join('')+txt(140,239,'Promedio = (20+15+25) / 3'),'Diagrama de barras con tiempos veinte quince y veinticinco minutos'),
+  shell(txt(32,38,'Meta frente a medida del prototipo')+rect(60,92,200,49,'class="v-guide"')+rect(60,158,215,49,'class="v-object"')+txt(277,120,'40 mm · objetivo')+txt(289,184,'43 mm · real')+txt(32,243,'Diferencia: exceso de 3 mm'),'Dos barras de cuarenta y cuarenta y tres milímetros')
+);
 const caption=[
- "Necesidad → boceto → prueba → ajuste","Simula una prueba de estabilidad","Primero mide, después modela","Compara alternativas según criterios","Encuentra la regla de la secuencia","La perforación requiere una secuencia","Detecta un contorno abierto","Agrupa y cuenta elementos","Cuenta unidades cuadradas","Reconoce las tres dimensiones","Compara radio y diámetro","Relaciona centímetros y milímetros","Relaciona posición y ejes XYZ","Analiza la vista desde arriba","Analiza la vista frontal","Gira mentalmente un sólido sin deformarlo"
+ "Necesidad → boceto → prueba → ajuste","Simula una prueba de estabilidad","Primero mide, después modela","Compara alternativas según criterios","Encuentra la regla de la secuencia","La perforación requiere una secuencia","Detecta un contorno abierto","Agrupa y cuenta elementos","Cuenta unidades cuadradas","Reconoce las tres dimensiones","Compara radio y diámetro","Relaciona centímetros y milímetros","Relaciona posición y ejes XYZ","Analiza la vista desde arriba","Analiza la vista frontal","Gira mentalmente un sólido sin deformarlo",
+ "Programa una secuencia","Divide problemas complejos","Evalúa una condición","Cuenta repeticiones","Compara longitudes","Interpreta una escala","Calcula un promedio","Contrasta meta y resultado"
 ];
 function build(id){
- if(!Number.isInteger(id)||id<1||id>16)throw new Error("Invalid diagnostic illustration "+id);
+ if(!Number.isInteger(id)||id<1||id>24)throw new Error("Invalid diagnostic illustration "+id);
  const section=document.createElement("section");section.className="interactive-figure";section.setAttribute("aria-label","Situación visual: "+caption[id-1]);
  const top=document.createElement("div");top.className="figure-toolbar";
  const heading=document.createElement("span");heading.textContent="SITUACIÓN VISUAL · "+String(id).padStart(2,"0");
