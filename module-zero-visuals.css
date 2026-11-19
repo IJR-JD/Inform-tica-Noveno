@@ -1,0 +1,40 @@
+/* Animated didactic SVGs: accessible, professional monochrome, motion optional */
+.interactive-figure{border:1px solid #c8ccd0;background:#fff;margin:18px 0 27px;overflow:hidden}
+.figure-toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 17px;background:#f4f4f3;border-bottom:1px solid #d7d7d7;font-size:.82rem;font-weight:760;letter-spacing:.06em}
+.figure-toggle{background:white;color:#161616;border:1px solid #444;border-radius:3px;padding:9px 14px;cursor:pointer;font:inherit;font-size:.83rem;letter-spacing:0;min-height:42px}
+.figure-toggle:hover{background:#ececec}
+.figure-toggle:focus-visible{outline:3px solid #666;outline-offset:3px}
+.figure-picture{padding:16px 20px 6px;display:grid;place-items:center;min-height:245px}
+.figure-picture svg{display:block;width:100%;max-width:760px;max-height:330px}
+.figure-caption{padding:4px 19px 15px;margin:0;color:#3d4349;font-size:.99rem;line-height:1.55}
+.figure-picture .v-text{font:600 17px/1.4 "Segoe UI",Arial,sans-serif;fill:#242424}
+.figure-picture .v-object{fill:#e1e4e6;stroke:#202020;stroke-width:2.6}
+.figure-picture .v-guide{fill:#f5f5f5;stroke:#202020;stroke-width:2.2}
+.figure-picture .v-phone{fill:#333;stroke:#101010;stroke-width:2}
+.figure-picture .v-outline{fill:none;stroke:#222;stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+.figure-picture .v-ground,.figure-picture .v-dim{stroke:#555;stroke-width:2}
+.figure-picture .v-arrow{stroke:#1b1b1b;stroke-width:2.5}
+.figure-picture .v-thick{stroke:#111;stroke-width:4}
+.figure-picture .v-dot{fill:#3a3a3a}
+.figure-picture .v-highlight{fill:#b4b4b4;stroke:#111}
+.figure-picture .v-top{fill:#f7f7f7;stroke:#242424;stroke-width:2.8}
+.figure-picture .v-front{fill:#ddd;stroke:#242424;stroke-width:2.8}
+.figure-picture .v-side{fill:#acb0b3;stroke:#242424;stroke-width:2.8}
+.figure-picture .v-cutter{fill:#fbfbfb;stroke:#222;stroke-width:2.7;stroke-dasharray:7 5}
+.figure-picture .v-gridcell{fill:#f3f3f3;stroke:#676767;stroke-width:1}
+.figure-picture .v-bob{transform-box:fill-box;transform-origin:center;animation:v-bob 2.6s ease-in-out infinite alternate}
+.figure-picture .v-rise{animation:v-rise 3.2s ease-in-out infinite alternate}
+.figure-picture .v-rock{transform-box:fill-box;transform-origin:bottom center;animation:v-rock 2.5s ease-in-out infinite alternate}
+.figure-picture .v-pulse{animation:v-pulse 2s ease-in-out infinite alternate}
+.figure-picture .v-rotor{transform-box:fill-box;transform-origin:center;animation:v-rotor 4s ease-in-out infinite alternate}
+.figure-picture .v-gridcell{animation:v-grid 2.3s ease-in-out infinite alternate}
+.figure-picture .v-camera{transform-box:fill-box;transform-origin:center;animation:v-rock 4s ease-in-out infinite alternate}
+@keyframes v-bob{to{transform:translateY(-5px)}}
+@keyframes v-rise{to{transform:translateY(8px)}}
+@keyframes v-rock{to{transform:rotate(6deg)}}
+@keyframes v-pulse{to{opacity:.4}}
+@keyframes v-rotor{to{transform:rotate(-9deg)}}
+@keyframes v-grid{from{fill:#fafafa}to{fill:#c9ced1}}
+.is-paused .figure-picture *, .is-paused .figure-picture *::before{animation-play-state:paused!important}
+@media(prefers-reduced-motion:reduce){.figure-picture *{animation:none!important}}
+@media(max-width:540px){.figure-toolbar{flex-wrap:wrap}.figure-picture{padding:9px;min-height:165px}.figure-caption{font-size:.92rem}.figure-picture svg{max-height:235px}}
