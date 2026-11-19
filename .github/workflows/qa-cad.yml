@@ -1,0 +1,32 @@
+name: QA CAD Noveno — sequential exercises
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'cad-curriculum.js'
+      - 'cad-progress-core.js'
+      - 'cad-polish.css'
+      - 'cad-accessibility.css'
+      - 'tests/**'
+      - '.github/workflows/qa-cad.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  cad-content-and-progression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate inline and external JavaScript syntax
+        run: |
+          node --check cad-progress-core.js
+          node --check cad-curriculum.js
+          node --check tests/cad-progress.test.cjs
+          node -e 'const fs=require("fs");const html=fs.readFileSync("index.html","utf8");const m=html.match(/<script>\s*([\s\S]*?)<\/script>/);if(!m)process.exit(2);fs.writeFileSync("/tmp/cad-home-inline.js",m[1])'
+          node --check /tmp/cad-home-inline.js
+      - name: Run 26-unit progression and curriculum tests
+        run: node --test tests/cad-progress.test.cjs
