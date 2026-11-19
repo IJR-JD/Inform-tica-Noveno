@@ -38,3 +38,10 @@
 .is-paused .figure-picture *, .is-paused .figure-picture *::before{animation-play-state:paused!important}
 @media(prefers-reduced-motion:reduce){.figure-picture *{animation:none!important}}
 @media(max-width:540px){.figure-toolbar{flex-wrap:wrap}.figure-picture{padding:9px;min-height:165px}.figure-caption{font-size:.92rem}.figure-picture svg{max-height:235px}}
+
+.figure-interact{margin:0 18px 12px;padding:12px 17px;min-height:45px;background:#fff;color:#111;border:1px solid #171717;border-radius:3px;font-size:.95rem;font-weight:700;cursor:pointer}
+.figure-interact:hover{background:#ededed}
+.figure-interact:focus-visible{outline:3px solid #707070;outline-offset:3px}
+.interactive-figure.is-interacted .v-rock{animation-play-state:paused!important;transform:rotate(19deg);transform-box:fill-box;transform-origin:bottom center;transition:transform .6s ease}
+.interactive-figure.is-interacted .v-rotor{animation-play-state:paused!important;transform:rotate(90deg);transform-box:fill-box;transform-origin:center;transition:transform .7s ease}
+@media(prefers-reduced-motion:reduce){.interactive-figure.is-interacted .v-rock,.interactive-figure.is-interacted .v-rotor{transition:none}}
