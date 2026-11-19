@@ -9,6 +9,25 @@ const assert=require("node:assert/strict");
   await page.goto("http://127.0.0.1:8765/index.html",{waitUntil:"load"});
   await page.locator("#topicGrid .hub-topic-card").first().waitFor();
   assert.equal(await page.locator("#topicGrid .hub-topic-card").count(),26);
+  assert.equal(await page.locator("#topicGrid .hub-topic-card").first().locator(".theory-action").isDisabled(),true,"Module 0 must gate lesson 1");
+  await page.locator("#openDiagnostic").click();
+  assert.equal(await page.locator("#diagnosticSubmit").isDisabled(),true,"Cannot submit unanswered diagnostic");
+  const correct=await page.evaluate(()=>window.IJRDiagnostic.questions.map(q=>q.correct));
+  assert.equal(correct.length,16);
+  for(let j=0;j<correct.length;j++){
+   const choice=j===0?(correct[j]+1)%4:correct[j];
+   await page.locator('input[name="diagnosticAnswer"][value="'+choice+'"]').check();
+   if(j<correct.length-1)await page.locator("#diagnosticNext").click();
+  }
+  assert.equal(await page.locator("#diagnosticSubmit").isEnabled(),true);
+  await page.locator("#diagnosticSubmit").click();
+  assert.ok((await page.locator("#diagnosticBody").textContent()).includes("15 / 16"),"Diagnostic displays valid score without minimum threshold");
+  await page.locator("#diagnosticGoCAD").click();
+  assert.equal(await page.locator("#topicGrid .hub-topic-card").first().locator(".theory-action").isEnabled(),true,"Lesson 1 unlocks after completed diagnostic");
+  await page.reload();
+  await page.locator("#topicGrid .hub-topic-card").first().waitFor();
+  assert.equal(await page.locator("#topicGrid .hub-topic-card").first().locator(".theory-action").isEnabled(),true,"Diagnostic completion persisted");
+
   assert.equal(await page.locator("#topicGrid .hub-topic-card").nth(1).locator(".theory-action").isDisabled(),true,"lesson 2 must be locked");
   for(let i=0;i<26;i++){
    const card=page.locator("#topicGrid .hub-topic-card").nth(i);
