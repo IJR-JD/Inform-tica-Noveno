@@ -69,3 +69,37 @@ test("consolidated UI retains theory/assessment and includes required exercise r
  assert.ok(html.includes('if(!eligible(i))return;'));
  assert.ok(html.includes('function saveExercise()'));
 });
+
+test("module zero checks 16 answerable questions across exactly four competency domains",()=>{
+ const M=require("../module-zero.js");
+ assert.equal(M.questions.length,16);
+ assert.equal(M.groups.length,4);
+ for(const cat of M.groups)assert.equal(M.questions.filter(q=>q.category===cat).length,4);
+ for(const q of M.questions){
+  assert.equal(q.options.length,4);
+  assert.equal(new Set(q.options).size,4);
+  assert.ok(Number.isInteger(q.correct)&&q.correct>=0&&q.correct<4);
+  assert.ok(q.prompt.length>30&&q.explanation.length>35);
+ }
+});
+test("module zero evaluates all responses and never demands a minimum passing score",()=>{
+ const M=require("../module-zero.js");
+ const correct=Object.fromEntries(M.questions.map(q=>[q.id,q.correct]));
+ const good=M.evaluate(correct);
+ assert.equal(good.answered,16);
+ assert.equal(good.correct,16);
+ assert.deepEqual(good.breakdown.map(b=>b.total),[4,4,4,4]);
+ const incorrect=Object.fromEntries(M.questions.map(q=>[q.id,(q.correct+1)%4]));
+ assert.equal(M.evaluate(incorrect).correct,0);
+ assert.equal(M.evaluate(incorrect).answered,16);
+});
+test("module zero requires all responses, persists safely and does not accept invalid saved answers",()=>{
+ const M=require("../module-zero.js");
+ const invalidStorage={getItem:()=>JSON.stringify({submitted:true,answers:{1:15,2:0}})};
+ assert.equal(M.isComplete(invalidStorage),false);
+ const responses=Object.fromEntries(M.questions.map(q=>[q.id,(q.correct+2)%4]));
+ const storage={getItem:()=>JSON.stringify({submitted:true,answers:responses})};
+ assert.equal(M.isComplete(storage),true);
+ const dirty={...responses,3:99,4:-2,5:"2"};
+ assert.equal(M.evaluate(dirty).answered,13);
+});
