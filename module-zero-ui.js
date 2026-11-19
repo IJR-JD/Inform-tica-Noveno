@@ -5,12 +5,7 @@ const D=window.IJRDiagnostic;
 const $=id=>document.getElementById(id);
 const state=D.load(localStorage);
 let current=0;
-const artwork={
- axes:'<svg viewBox="0 0 360 210" role="img" aria-label="Ejes X, Y y Z en un sistema de coordenadas"><g fill="none" stroke="#151515" stroke-width="3"><path d="M120 150 L288 183 M120 150 L50 197 M120 150 L120 22"/></g><g fill="#151515" font-family="sans-serif" font-size="20" font-weight="700"><text x="298" y="191">X</text><text x="30" y="205">Y</text><text x="114" y="18">Z</text></g><path d="M130 117 201 132 247 108 173 92Z M130 117V165L201 184V132 M201 184 247 157V108" fill="#e5e5e5" stroke="#333" stroke-width="2"/></svg>',
- top:'<svg viewBox="0 0 360 190" role="img" aria-label="Bloque observado desde arriba, superficie rectangular de 50 por 30"><rect x="69" y="52" width="225" height="100" fill="#efefef" stroke="#111" stroke-width="3"/><path d="M69 31H294 M69 24V38 M294 24V38 M48 52V152 M42 52H55 M42 152H55" stroke="#111" stroke-width="2"/><g font-size="17" fill="#222" font-family="sans-serif"><text x="160" y="25">ancho</text><text x="12" y="108" transform="rotate(-90 12 108)">profundidad</text></g></svg>',
- front:'<svg viewBox="0 0 360 190" role="img" aria-label="Vista frontal de un bloque, ancho 40 milímetros y altura 25 milímetros"><rect x="78" y="40" width="205" height="117" fill="#f0f0f0" stroke="#111" stroke-width="3"/><g fill="#222" font-size="17" font-family="sans-serif"><text x="151" y="183">40 mm</text><text x="300" y="105">25 mm</text></g><path d="M78 165V172 M283 165V172 M78 171H283 M290 40H298 M290 157H298 M297 40V157" stroke="#555" stroke-width="2"/></svg>',
- cube:'<svg viewBox="0 0 360 210" role="img" aria-label="Cubo en perspectiva con tres caras visibles"><polygon points="110,61 177,23 254,61 187,103" fill="white" stroke="#111" stroke-width="3"/><polygon points="110,61 187,103 187,184 110,142" fill="#e2e2e2" stroke="#111" stroke-width="3"/><polygon points="187,103 254,61 254,142 187,184" fill="#b8b8b8" stroke="#111" stroke-width="3"/></svg>'
-};
+
 function persist(){
  try{localStorage.setItem(D.KEY,JSON.stringify(state));return true}catch{return false}
 }
@@ -20,12 +15,12 @@ function show(){
  render();
 }
 function questionUI(){
- const q=D.questions[current],value=state.answers[q.id],fig=q.visual?'<div class="diagnostic-figure">'+artwork[q.visual]+'</div>':'';
+ const q=D.questions[current],value=state.answers[q.id];
  const frame=$('diagnosticBody');
  frame.replaceChildren();
  const tag=document.createElement('p');tag.className="eyebrow";tag.textContent=q.category+" · PREGUNTA "+(current+1)+" DE "+D.questions.length;frame.append(tag);
  const heading=document.createElement('h2');heading.textContent=q.prompt;frame.append(heading);
- if(q.visual){const img=document.createElement('div');img.className="diagnostic-figure";img.innerHTML=artwork[q.visual];frame.append(img)}
+ frame.append(window.IJRVisuals.build(q.id));
  const opts=document.createElement('div');opts.className="diagnostic-options";
  q.options.forEach((option,index)=>{
   const label=document.createElement('label');label.className="diagnostic-choice";
