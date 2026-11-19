@@ -19,7 +19,7 @@ const assert=require("node:assert/strict");
   assert.equal(await page.locator("#diagnosticSubmit").isDisabled(),true,"Cannot submit unanswered diagnostic");
   assert.equal(await page.locator("#diagnosticNav .diagnostic-nav-button").count(),24,"Question navigation has 24 accessible steps");
   await page.locator("#diagnosticNav .diagnostic-nav-button").nth(7).click();
-  assert.ok((await page.locator("#diagnosticBody").textContent()).includes("PREGUNTA 8 DE 16"),"Question navigation works");
+  assert.ok((await page.locator("#diagnosticBody").textContent()).includes("PREGUNTA 8 DE 24"),"Question navigation works");
   await page.locator("#diagnosticNav .diagnostic-nav-button").first().click();
 
   assert.equal(await page.locator("#diagnosticBody svg[role=img]").count(),1,"First diagnostic question must include its own figure");
