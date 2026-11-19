@@ -52,3 +52,10 @@
 .diagnostic-recommendations h3{font-size:clamp(1.3rem,2vw,1.8rem);margin:0 0 15px}
 .diagnostic-workspace #diagnosticExport{border-color:#111}
 @media(max-width:560px){.diagnostic-identity .button{width:100%}}
+
+/* Institutional email access, consistent with the existing monochrome school UI. */
+.diagnostic-identity input[type="email"],.diagnostic-identity input[type="text"]{width:100%;max-width:480px;box-sizing:border-box;font:inherit;padding:16px 18px;background:#fff;border:1px solid #909090;border-radius:4px}
+#diagnosticOtpPanel{display:grid;gap:12px;padding:19px 0;margin-top:5px;border-top:1px solid #ddd}
+#diagnosticOtpPanel .button{justify-self:start}
+.diagnostic-active{font-size:1.02rem}
+@media(max-width:560px){#diagnosticOtpPanel .button{width:100%}}
