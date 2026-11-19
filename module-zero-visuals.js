@@ -38,6 +38,17 @@ function build(id){
  button.addEventListener("click",()=>{const paused=section.classList.toggle("is-paused");button.textContent=paused?"Reanudar animación":"Pausar animación";button.setAttribute("aria-pressed",paused?"true":"false")});
  top.append(heading,button);section.append(top);
  const picture=document.createElement("div");picture.className="figure-picture";picture.innerHTML=objects[id-1];section.append(picture);
+ if(id===2||id===16){
+  const control=document.createElement("button");control.type="button";control.className="figure-interact";
+  control.textContent=id===2?"Probar inclinación del prototipo":"Girar el cubo 90°";
+  let toggled=false;
+  control.addEventListener("click",()=>{
+   toggled=!toggled;section.classList.toggle("is-interacted",toggled);
+   control.setAttribute("aria-pressed",String(toggled));
+   control.textContent=id===2?(toggled?"Restablecer prototipo":"Probar inclinación del prototipo"):(toggled?"Restablecer orientación":"Girar el cubo 90°");
+  });
+  control.setAttribute("aria-pressed","false");section.append(control);
+ }
  const desc=document.createElement("p");desc.className="figure-caption";desc.textContent=caption[id-1]+". Observa la situación antes de responder.";section.append(desc);
  return section;
 }
