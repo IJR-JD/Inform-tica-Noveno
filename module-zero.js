@@ -1,0 +1,34 @@
+/* Módulo 0 · diagnóstico formativo, no calificativo · IJR Noveno */
+(function(root,factory){
+ "use strict";
+ const api=factory();
+ if(typeof module==="object"&&module.exports)module.exports=api;
+ root.IJRDiagnostic=api;
+})(typeof window!=="undefined"?window:globalThis,function(){
+ "use strict";
+ const questions=[{"id":1,"category":"Proceso de diseño","prompt":"Antes de dibujar un soporte para celular, ¿cuál es la primera acción más adecuada?","options":["Elegir su color","Identificar qué problema debe resolver y sus medidas","Enviar el archivo a imprimir","Crear muchos adornos"],"correct":1,"explanation":"El diseño comienza por comprender la necesidad y definir requisitos.","visual":null},{"id":2,"category":"Proceso de diseño","prompt":"Un prototipo no sostiene el objeto como esperabas. ¿Qué procedimiento tiene más sentido?","options":["Ocultar el error","Cambiar todo sin analizar","Identificar la falla, ajustar el diseño y probar otra vez","Imprimir el mismo prototipo muchas veces"],"correct":2,"explanation":"El proceso de diseño es iterativo: observar, analizar, modificar y verificar.","visual":null},{"id":3,"category":"Proceso de diseño","prompt":"Debes fabricar una pieza de 60 mm de largo y 20 mm de ancho. ¿Qué conviene hacer primero?","options":["Dibujar un boceto indicando ambas dimensiones","Aumentar la escala al azar","Elegir una textura","Ignorar las unidades"],"correct":0,"explanation":"El boceto con cotas evita errores dimensionales posteriores.","visual":null},{"id":4,"category":"Proceso de diseño","prompt":"Dos soluciones cumplen la función, pero una consume menos material. ¿Cómo decides?","options":["Comparando función, estabilidad y consumo","Eligiendo siempre la más pesada","Eligiendo sin probar","Usando la de mayor tamaño"],"correct":0,"explanation":"Se comparan alternativas mediante criterios verificables.","visual":null},{"id":5,"category":"Lógica y secuencias","prompt":"La serie de piezas aumenta así: 2, 4, 6, 8, … ¿qué sigue?","options":["9","10","12","16"],"correct":1,"explanation":"La secuencia incrementa en 2 unidades.","visual":null},{"id":6,"category":"Lógica y secuencias","prompt":"Para crear una perforación en una placa, ¿cuál es la secuencia lógica?","options":["Restar un cilindro antes de tener una placa","Crear placa, crear cortador y aplicar diferencia","Pintar placa y exportar fotografía","Eliminar el sólido principal"],"correct":1,"explanation":"Se necesita primero un sólido base y otro cortador.","visual":null},{"id":7,"category":"Lógica y secuencias","prompt":"Si un modelo tiene bordes abiertos, entonces no se debe considerar automáticamente listo para impresión. El modelo tiene bordes abiertos. ¿Qué concluyes?","options":["Está necesariamente listo","No se puede afirmar que esté listo sin corregir o verificar","El color está incorrecto","Debe pesar menos"],"correct":1,"explanation":"La condición observada exige revisar el cierre del modelo.","visual":null},{"id":8,"category":"Lógica y secuencias","prompt":"Una tarea usa 3 tornillos por pieza. ¿Cuántos tornillos requieren 5 piezas iguales?","options":["8","12","15","18"],"correct":2,"explanation":"Cinco grupos de tres: 5 × 3 = 15.","visual":null},{"id":9,"category":"Geometría y medidas","prompt":"Un rectángulo mide 8 cm de largo y 3 cm de ancho. ¿Cuál es su área?","options":["11 cm²","22 cm²","24 cm²","48 cm²"],"correct":2,"explanation":"Área = 8 × 3 = 24 cm².","visual":null},{"id":10,"category":"Geometría y medidas","prompt":"Un cubo tiene arista de 4 cm. ¿Cuál es su volumen?","options":["12 cm³","16 cm³","48 cm³","64 cm³"],"correct":3,"explanation":"El volumen de un cubo es lado³ = 4³ = 64 cm³.","visual":null},{"id":11,"category":"Geometría y medidas","prompt":"Un círculo tiene radio de 5 mm. ¿Cuál es su diámetro?","options":["2,5 mm","5 mm","10 mm","25 mm"],"correct":2,"explanation":"El diámetro equivale a dos radios: 2 × 5 = 10 mm.","visual":null},{"id":12,"category":"Geometría y medidas","prompt":"Una pieza mide 2 cm de espesor. ¿Cuánto equivale en milímetros?","options":["0,2 mm","2 mm","20 mm","200 mm"],"correct":2,"explanation":"1 cm equivale a 10 mm, así que 2 cm = 20 mm.","visual":null},{"id":13,"category":"Análisis espacial","prompt":"Observa el sólido: se representa como un bloque con ancho (X), profundidad (Y) y altura (Z). ¿En qué eje se mide la altura?","options":["X","Y","Z","Ninguno"],"correct":2,"explanation":"En esta representación convencional la altura corresponde al eje Z.","visual":"axes"},{"id":14,"category":"Análisis espacial","prompt":"Si observas un prisma rectangular directamente desde arriba, ¿qué dos dimensiones puedes comparar?","options":["Ancho y profundidad","Alto y profundidad","Solo altura","Volumen y peso"],"correct":0,"explanation":"La vista superior representa ancho y profundidad.","visual":"top"},{"id":15,"category":"Análisis espacial","prompt":"La vista frontal muestra una figura de 40 mm de ancho y 25 mm de alto. ¿Qué dimensión no se observa directamente en esa vista?","options":["Ancho","Altura","Profundidad","Ninguna"],"correct":2,"explanation":"La profundidad se aprecia en la vista lateral o superior.","visual":"front"},{"id":16,"category":"Análisis espacial","prompt":"Un cubo se gira 90° alrededor de un eje sin deformarse. ¿Qué cambia?","options":["Su volumen","Sus dimensiones reales","Su orientación espacial","Su número de caras"],"correct":2,"explanation":"Una rotación rígida cambia la orientación sin modificar tamaño ni volumen.","visual":"cube"}];
+ const groups=["Proceso de diseño","Lógica y secuencias","Geometría y medidas","Análisis espacial"];
+ const KEY="ijr-cad9-diagnostic-v1";
+ function validAnswers(value){
+  if(!value||typeof value!=="object")return {};
+  const answer={};
+  questions.forEach(q=>{const n=value[q.id];if(Number.isInteger(n)&&n>=0&&n<q.options.length)answer[q.id]=n});
+  return answer;
+ }
+ function load(storage){
+  try{const raw=JSON.parse(storage.getItem(KEY)||"{}");const answers=validAnswers(raw.answers);
+   return {answers,submitted:Boolean(raw.submitted)&&questions.every(q=>Object.prototype.hasOwnProperty.call(answers,q.id)),submittedAt:typeof raw.submittedAt==="string"?raw.submittedAt:null};
+  }catch{return {answers:{},submitted:false,submittedAt:null}}
+ }
+ function evaluate(answers){
+  const valid=validAnswers(answers);
+  const breakdown=groups.map(category=>{
+    const items=questions.filter(q=>q.category===category);
+    const correct=items.filter(q=>valid[q.id]===q.correct).length;
+    return {category,correct,total:items.length,percent:Math.round(correct/items.length*100)};
+  });
+  return {answered:Object.keys(valid).length,total:questions.length,correct:breakdown.reduce((n,g)=>n+g.correct,0),breakdown};
+ }
+ function isComplete(storage){return load(storage).submitted}
+ return {questions,groups,KEY,validAnswers,load,evaluate,isComplete};
+});
