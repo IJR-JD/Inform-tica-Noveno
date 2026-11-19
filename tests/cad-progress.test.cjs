@@ -70,36 +70,59 @@ test("consolidated UI retains theory/assessment and includes required exercise r
  assert.ok(html.includes('function saveExercise()'));
 });
 
-test("module zero checks 16 answerable questions across exactly four competency domains",()=>{
+
+test("24 diagnostic questions across 6 competencies and unique answer options",()=>{
  const M=require("../module-zero.js");
- assert.equal(M.questions.length,16);
- assert.equal(M.groups.length,4);
- for(const cat of M.groups)assert.equal(M.questions.filter(q=>q.category===cat).length,4);
- for(const q of M.questions){
+ assert.equal(M.questions.length,24);
+ assert.equal(M.groups.length,6);
+ for(const group of M.groups)assert.equal(M.questions.filter(q=>q.category===group).length,4,group);
+ for(const [i,q] of M.questions.entries()){
+  assert.equal(q.id,i+1);
   assert.equal(q.options.length,4);
   assert.equal(new Set(q.options).size,4);
+  assert.ok(q.prompt.length>24&&q.explanation.length>25);
   assert.ok(Number.isInteger(q.correct)&&q.correct>=0&&q.correct<4);
-  assert.ok(q.prompt.length>24&&q.explanation.length>20);
  }
 });
-test("module zero evaluates all responses and never demands a minimum passing score",()=>{
+test("individual profiles: 0, mid and high performance with valid domain breakdowns",()=>{
  const M=require("../module-zero.js");
- const correct=Object.fromEntries(M.questions.map(q=>[q.id,q.correct]));
- const good=M.evaluate(correct);
- assert.equal(good.answered,16);
- assert.equal(good.correct,16);
- assert.deepEqual(good.breakdown.map(b=>b.total),[4,4,4,4]);
- const incorrect=Object.fromEntries(M.questions.map(q=>[q.id,(q.correct+1)%4]));
- assert.equal(M.evaluate(incorrect).correct,0);
- assert.equal(M.evaluate(incorrect).answered,16);
+ const make=(n)=>Object.fromEntries(M.questions.map((q,i)=>[q.id,i<n?q.correct:(q.correct+1)%4]));
+ const low=M.profile(make(0)),mid=M.profile(make(12)),high=M.profile(make(24));
+ assert.equal(low.percent,0);assert.equal(low.level,"Acompañamiento inicial");
+ assert.equal(mid.percent,50);assert.equal(mid.level,"Desarrollo de fundamentos");
+ assert.equal(high.percent,100);assert.equal(high.level,"Consolidación y profundización");
+ assert.equal(low.domains.length,6);assert.equal(mid.score,12);
+ assert.ok(low.priorities.length<=3&&low.priorities.length>0);
+ assert.equal(high.priorities.length,0);
+ assert.equal(M.profile({}),null);
+ const oneWrong=M.profile(make(23));assert.equal(oneWrong.score,23);
 });
-test("module zero requires all responses, persists safely and does not accept invalid saved answers",()=>{
+test("separate students keep separate saved answers; invalid IDs and incomplete assessments blocked",()=>{
  const M=require("../module-zero.js");
- const invalidStorage={getItem:()=>JSON.stringify({submitted:true,answers:{1:15,2:0}})};
- assert.equal(M.isComplete(invalidStorage),false);
- const responses=Object.fromEntries(M.questions.map(q=>[q.id,(q.correct+2)%4]));
- const storage={getItem:()=>JSON.stringify({submitted:true,answers:responses})};
+ const db=new Map();const storage={getItem:k=>db.get(k)||null,setItem:(k,v)=>db.set(k,String(v)),removeItem:k=>db.delete(k),key:i=>Array.from(db.keys())[i],get length(){return db.size}};
+ const a=Object.fromEntries(M.questions.map(q=>[q.id,q.correct]));
+ const b=Object.fromEntries(M.questions.map(q=>[q.id,(q.correct+1)%4]));
+ assert.equal(M.cleanCode(" 9a-07 "),"9A-07");
+ assert.equal(M.cleanCode("A"),null);
+ assert.equal(M.cleanCode("student@example.com"),null);
+ assert.equal(M.saveForCode(storage,"9A-07",{answers:a,submitted:true,submittedAt:"2026-11-19T10:00:00Z"}),true);
  assert.equal(M.isComplete(storage),true);
- const dirty={...responses,3:99,4:-2,5:"2"};
- assert.equal(M.evaluate(dirty).answered,13);
+ assert.equal(M.saveForCode(storage,"9A-08",{answers:b,submitted:true}),true);
+ assert.equal(M.getActiveCode(storage),"9A-08");
+ assert.equal(M.loadForCode(storage,"9A-07").submitted,true);
+ assert.equal(M.loadForCode(storage,"9A-08").submitted,true);
+ assert.equal(M.profile(M.loadForCode(storage,"9A-07").answers).score,24);
+ assert.equal(M.profile(M.loadForCode(storage,"9A-08").answers).score,0);
+ assert.equal(M.existingCodes(storage).length,2);
+ const report=M.exportRecord("9A-08",b,null);
+ assert.equal(report.studentCode,"9A-08");assert.equal(report.profile.score,0);
+ assert.ok(!("name" in report)&&!("email" in report));
+ assert.equal(M.saveForCode(storage,"9A-09",{answers:{1:1},submitted:true}),true);
+ assert.equal(M.isComplete(storage),false);
+});
+test("all modules retain content / assessment components and profile controls",()=>{
+ for(const id of ["diagnosticIdentity","diagnosticCode","diagnosticSelect","diagnosticStudentCode","diagnosticSwitch","diagnosticExport","diagnosticNav","topicGrid","workshop"])
+  assert.ok(html.includes('id="'+id+'"'),"Missing "+id);
+ for(const resource of ["module-zero.js","module-zero-visuals.js","module-zero.css","module-zero-ui.js"])
+  assert.ok(html.includes(resource));
 });
