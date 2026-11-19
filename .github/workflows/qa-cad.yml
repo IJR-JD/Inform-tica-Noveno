@@ -8,6 +8,7 @@ on:
       - 'cad-progress-core.js'
       - 'module-zero.js'
       - 'module-zero-ui.js'
+      - 'cad-email-auth.js'
       - 'module-zero-visuals.js'
       - 'module-zero-visuals.css'
       - 'module-zero.css'
@@ -31,6 +32,7 @@ jobs:
           node --check cad-progress-core.js
           node --check cad-curriculum.js
           node --check module-zero.js
+          node --check cad-email-auth.js
           node --check module-zero-ui.js
           node --check module-zero-visuals.js
           node --check tests/cad-progress.test.cjs
