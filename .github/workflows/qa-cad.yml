@@ -8,6 +8,8 @@ on:
       - 'cad-progress-core.js'
       - 'module-zero.js'
       - 'module-zero-ui.js'
+      - 'module-zero-visuals.js'
+      - 'module-zero-visuals.css'
       - 'module-zero.css'
       - 'cad-polish.css'
       - 'cad-accessibility.css'
@@ -30,6 +32,7 @@ jobs:
           node --check cad-curriculum.js
           node --check module-zero.js
           node --check module-zero-ui.js
+          node --check module-zero-visuals.js
           node --check tests/cad-progress.test.cjs
           node -e 'const fs=require("fs");const html=fs.readFileSync("index.html","utf8");const m=html.match(/<script>\s*([\s\S]*?)<\/script>/);if(!m)process.exit(2);fs.writeFileSync("/tmp/cad-home-inline.js",m[1])'
           node --check /tmp/cad-home-inline.js
