@@ -14,6 +14,24 @@ function show(){
  window.scrollTo(0,0);
  render();
 }
+function questionNavigation(){
+ const nav=$("diagnosticNav");nav.replaceChildren();
+ if(state.submitted){nav.classList.add("app-hidden");return}
+ nav.classList.remove("app-hidden");
+ const label=document.createElement("p");label.className="eyebrow";label.textContent="SALTA A UNA PREGUNTA · ✓ RESPONDIDA";nav.append(label);
+ const group=document.createElement("div");group.className="diagnostic-nav-grid";
+ D.questions.forEach((q,i)=>{
+   const btn=document.createElement("button");btn.type="button";btn.className="diagnostic-nav-button";
+   const answered=Number.isInteger(state.answers[q.id]);
+   btn.textContent=String(i+1).padStart(2,"0")+(answered?" ✓":"");
+   btn.setAttribute("aria-label","Pregunta "+(i+1)+(answered?", respondida":", sin responder"));
+   btn.setAttribute("aria-current",i===current?"step":"false");
+   if(answered)btn.classList.add("is-answered");
+   if(i===current)btn.classList.add("is-current");
+   btn.onclick=()=>{current=i;render()};
+   group.append(btn);
+ });nav.append(group);
+}
 function questionUI(){
  const q=D.questions[current],value=state.answers[q.id];
  const frame=$('diagnosticBody');
@@ -29,7 +47,7 @@ function questionUI(){
    state.answers[q.id]=index;
    if(!persist())$('diagnosticNotice').textContent="No se pudo guardar en el navegador. Revisa la configuración de almacenamiento.";
    else $('diagnosticNotice').textContent="Respuesta guardada en este dispositivo.";
-   updateProgress();
+   updateProgress();questionNavigation();
   });
   const copy=document.createElement('span');copy.textContent=option;
   label.append(input,copy);opts.append(label);
@@ -74,6 +92,7 @@ function summary(){
  $('diagnosticNotice').textContent='Diagnóstico guardado localmente. Puedes comenzar la Unidad 1.';
 }
 function render(){
+ questionNavigation();
  $('diagnosticPrev').classList.remove('app-hidden');
  $('diagnosticNext').classList.remove('app-hidden');
  $('diagnosticSubmit').classList.remove('app-hidden');
@@ -97,7 +116,7 @@ function updateCard(){
 $('openDiagnostic').addEventListener('click',show);
 $('fromDiagnostic').addEventListener('click',()=>{if(!state.submitted)$('diagnosticNotice').textContent='Puedes volver luego: tus respuestas quedan guardadas en este dispositivo.';window.returnCADHome?.()});
 $('diagnosticPrev').addEventListener('click',()=>{if(current>0){current--;render()}});
-$('diagnosticNext').addEventListener('click',()=>{if(current<D.questions.length-1){current++;render()}else{$('diagnosticNotice').textContent='Revisa tus respuestas y pulsa Finalizar diagnóstico.';window.scrollTo(0,0)}});
+$('diagnosticNext').addEventListener('click',()=>{if(current<D.questions.length-1){current++;render()}else{const missing=D.questions.findIndex(q=>!Object.prototype.hasOwnProperty.call(state.answers,q.id));if(missing>=0){current=missing;render();$('diagnosticNotice').textContent='Completa esta pregunta pendiente antes de finalizar.'}else{$('diagnosticNotice').textContent='Todas las preguntas están contestadas. Pulsa Finalizar diagnóstico.';window.scrollTo(0,0)}}});
 $('diagnosticSubmit').addEventListener('click',finish);
 $('diagnosticGoCAD').addEventListener('click',()=>{window.returnCADHome?.();document.getElementById('topicGrid').scrollIntoView({behavior:'smooth'})});
 updateCard();
