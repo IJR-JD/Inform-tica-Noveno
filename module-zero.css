@@ -26,3 +26,13 @@
 .diagnostic-review p{border-top:1px solid #e5e5e5;padding-top:15px}
 @media(max-width:800px){.diagnostic-card{grid-template-columns:1fr}.diagnostic-options,.diagnostic-results{grid-template-columns:1fr}.diagnostic-card .button{justify-self:start}}
 @media(max-width:460px){.diagnostic-actions .button{width:100%}.diagnostic-choice{padding:16px}}
+
+/* Assessment navigation: visible progress without revealing correct answers */
+.diagnostic-nav{border-bottom:1px solid #d5d5d5;padding-bottom:23px;margin:0 0 30px}
+.diagnostic-nav>.eyebrow{margin:0 0 12px}
+.diagnostic-nav-grid{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:9px}
+.diagnostic-nav-button{font:700 .89rem/1.1 "Segoe UI",Arial,sans-serif;min-height:46px;border:1px solid #bebebe;background:#fff;color:#343434;cursor:pointer;border-radius:3px}
+.diagnostic-nav-button.is-answered{background:#e7e7e7;border-color:#666}
+.diagnostic-nav-button.is-current{outline:3px solid #111;outline-offset:1px}
+.diagnostic-nav-button:focus-visible{outline:3px solid #777;outline-offset:3px}
+@media(max-width:720px){.diagnostic-nav-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
