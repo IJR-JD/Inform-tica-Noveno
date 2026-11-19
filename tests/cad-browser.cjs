@@ -12,9 +12,20 @@ const assert=require("node:assert/strict");
   assert.equal(await page.locator("#topicGrid .hub-topic-card").first().locator(".theory-action").isDisabled(),true,"Module 0 must gate lesson 1");
   await page.locator("#openDiagnostic").click();
   assert.equal(await page.locator("#diagnosticSubmit").isDisabled(),true,"Cannot submit unanswered diagnostic");
+  assert.equal(await page.locator("#diagnosticBody svg[role=img]").count(),1,"First diagnostic question must include its own figure");
+  assert.equal(await page.locator("#diagnosticBody .figure-toggle").count(),1,"Every figure must have an animation control");
+  await page.locator("#diagnosticBody .figure-toggle").click();
+  assert.equal(await page.locator("#diagnosticBody .interactive-figure.is-paused").count(),1,"Pause button must work");
+  await page.locator("#diagnosticBody .figure-toggle").click();
   const correct=await page.evaluate(()=>window.IJRDiagnostic.questions.map(q=>q.correct));
   assert.equal(correct.length,16);
   for(let j=0;j<correct.length;j++){
+   assert.equal(await page.locator("#diagnosticBody svg[role=img]").count(),1,"Visual diagram required in question "+(j+1));
+   assert.equal(await page.locator("#diagnosticBody .figure-toggle").count(),1,"Pause control required "+(j+1));
+   if(j===1||j===15){
+    await page.locator("#diagnosticBody .figure-interact").click();
+    assert.equal(await page.locator("#diagnosticBody .interactive-figure.is-interacted").count(),1,"Interactive visual must respond "+(j+1));
+   }
    const choice=j===0?(correct[j]+1)%4:correct[j];
    await page.locator('input[name="diagnosticAnswer"][value="'+choice+'"]').check();
    if(j<correct.length-1)await page.locator("#diagnosticNext").click();
