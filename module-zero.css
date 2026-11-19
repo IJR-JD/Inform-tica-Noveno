@@ -36,3 +36,19 @@
 .diagnostic-nav-button.is-current{outline:3px solid #111;outline-offset:1px}
 .diagnostic-nav-button:focus-visible{outline:3px solid #777;outline-offset:3px}
 @media(max-width:720px){.diagnostic-nav-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+
+/* Individual student diagnostic entry and evidence-based profile */
+.diagnostic-identity{border:1px solid #222;padding:clamp(22px,3vw,36px);background:#fafafa;display:grid;gap:13px}
+.diagnostic-identity h2{margin:0;font-size:clamp(1.6rem,3vw,2.3rem)}
+.diagnostic-identity p{margin:0;line-height:1.7}
+.diagnostic-identity label{font-weight:740}
+.diagnostic-identity input{width:100%;max-width:440px;font:inherit;padding:14px 16px;border:1px solid #888;background:white;border-radius:3px}
+.diagnostic-identity input:focus-visible{outline:3px solid #777;outline-offset:2px}
+.diagnostic-identity .button{justify-self:start}
+.diagnostic-active{display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid #d6d6d6;padding:12px 0 23px;margin-bottom:22px;font-weight:750;flex-wrap:wrap}
+.diagnostic-profile,.diagnostic-recommendations{padding:clamp(21px,2.5vw,32px);background:#f7f7f6;border:1px solid #c5c5c5;margin:22px 0}
+.diagnostic-profile h3{font-size:clamp(1.5rem,2.8vw,2.3rem);line-height:1.2;margin:13px 0}
+.diagnostic-profile p,.diagnostic-recommendations p{line-height:1.75;margin:13px 0}
+.diagnostic-recommendations h3{font-size:clamp(1.3rem,2vw,1.8rem);margin:0 0 15px}
+.diagnostic-workspace #diagnosticExport{border-color:#111}
+@media(max-width:560px){.diagnostic-identity .button{width:100%}}
