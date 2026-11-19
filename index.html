@@ -32,8 +32,20 @@ window.refreshStudentProgress=async function(){
  if(!person){key=null;store=P.cleanState({},DATA.topics.length);diagnosticComplete=false;cards();return}
  key="ijr-cad9-sequential-auth-v1-"+person.id;
  let local={};try{local=JSON.parse(localStorage.getItem(key)||"{}")}catch{}
- store=P.cleanState(local,DATA.topics.length);
- try{const remote=await auth.loadProgress();if(remote)store=P.cleanState(remote,DATA.topics.length)}catch(error){console.warn("No se pudo sincronizar el progreso CAD:",error.message)}
+ const localState=P.cleanState(local,DATA.topics.length);
+ store=localState;
+ try{
+   const remoteRaw=await auth.loadProgress();
+   if(remoteRaw){
+     const remote=P.cleanState(remoteRaw,DATA.topics.length);
+     const attempts={...remote.attempts};
+     for(const [idx,num] of Object.entries(localState.attempts))attempts[idx]=Math.max(attempts[idx]||0,num);
+     store=P.cleanState({reviewed:[...remote.reviewed,...localState.reviewed],quizzes:[...remote.quizzes,...localState.quizzes],
+      exercises:{...remote.exercises,...localState.exercises},attempts},DATA.topics.length);
+     if(JSON.stringify(store)!==JSON.stringify(remote))syncQueue=syncQueue.catch(()=>{}).then(()=>auth.saveProgress(store)).catch(error=>console.warn("Sincronización pendiente:",error.message));
+   }
+   try{localStorage.setItem(key,JSON.stringify(store))}catch{}
+ }catch(error){console.warn("No se pudo sincronizar el progreso CAD:",error.message)}
  cards();
 };
 const $=id=>document.getElementById(id);
