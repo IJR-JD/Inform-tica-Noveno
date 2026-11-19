@@ -12,6 +12,11 @@ const assert=require("node:assert/strict");
   assert.equal(await page.locator("#topicGrid .hub-topic-card").first().locator(".theory-action").isDisabled(),true,"Module 0 must gate lesson 1");
   await page.locator("#openDiagnostic").click();
   assert.equal(await page.locator("#diagnosticSubmit").isDisabled(),true,"Cannot submit unanswered diagnostic");
+  assert.equal(await page.locator("#diagnosticNav .diagnostic-nav-button").count(),16,"Question navigation has 16 accessible steps");
+  await page.locator("#diagnosticNav .diagnostic-nav-button").nth(7).click();
+  assert.ok((await page.locator("#diagnosticBody").textContent()).includes("PREGUNTA 8 DE 16"),"Question navigation works");
+  await page.locator("#diagnosticNav .diagnostic-nav-button").first().click();
+
   assert.equal(await page.locator("#diagnosticBody svg[role=img]").count(),1,"First diagnostic question must include its own figure");
   assert.equal(await page.locator("#diagnosticBody .figure-toggle").count(),1,"Every figure must have an animation control");
   await page.locator("#diagnosticBody .figure-toggle").click();
