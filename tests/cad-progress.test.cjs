@@ -97,31 +97,27 @@ test("individual profiles: 0, mid and high performance with valid domain breakdo
  assert.equal(M.profile({}),null);
  const oneWrong=M.profile(make(23));assert.equal(oneWrong.score,23);
 });
-test("separate students keep separate saved answers; invalid IDs and incomplete assessments blocked",()=>{
- const M=require("../module-zero.js");
- const db=new Map();const storage={getItem:k=>db.get(k)||null,setItem:(k,v)=>db.set(k,String(v)),removeItem:k=>db.delete(k),key:i=>Array.from(db.keys())[i],get length(){return db.size}};
- const a=Object.fromEntries(M.questions.map(q=>[q.id,q.correct]));
- const b=Object.fromEntries(M.questions.map(q=>[q.id,(q.correct+1)%4]));
- assert.equal(M.cleanCode(" 9a-07 "),"9A-07");
- assert.equal(M.cleanCode("A"),null);
- assert.equal(M.cleanCode("student@example.com"),null);
- assert.equal(M.saveForCode(storage,"9A-07",{answers:a,submitted:true,submittedAt:"2026-11-19T10:00:00Z"}),true);
- assert.equal(M.isComplete(storage),true);
- assert.equal(M.saveForCode(storage,"9A-08",{answers:b,submitted:true}),true);
- assert.equal(M.getActiveCode(storage),"9A-08");
- assert.equal(M.loadForCode(storage,"9A-07").submitted,true);
- assert.equal(M.loadForCode(storage,"9A-08").submitted,true);
- assert.equal(M.profile(M.loadForCode(storage,"9A-07").answers).score,24);
- assert.equal(M.profile(M.loadForCode(storage,"9A-08").answers).score,0);
- assert.equal(M.existingCodes(storage).length,2);
- const report=M.exportRecord("9A-08",b,null);
- assert.equal(report.studentCode,"9A-08");assert.equal(report.profile.score,0);
- assert.ok(!("name" in report)&&!("email" in report));
- assert.equal(M.saveForCode(storage,"9A-09",{answers:{1:1},submitted:true}),true);
- assert.equal(M.isComplete(storage),false);
+test("institutional email login rejects external domains, malformed addresses and uppercase normalization",()=>{
+ const Auth=require("../cad-email-auth.js");
+ assert.equal(Auth.normalizeEmail(" STUDENT@IJR.EDU.CO "),"student@ijr.edu.co");
+ for(const email of ["test1@ijr.edu.co","first.last@ijr.edu.co"," STUDENT@IJR.EDU.CO "])assert.equal(Auth.validEmail(email),true);
+ for(const email of ["test@gmail.com","9A-07","student@fakeijr.edu.co","student@ijr.edu.co.invalid","x @ijr.edu.co",""])assert.equal(Auth.validEmail(email),false);
+ assert.equal(Auth.authenticated,false);
+});
+test("Módulo 0 login uses Supabase project and email OTP, not code-only login",()=>{
+ const Auth=require("../cad-email-auth.js");
+ assert.ok(Auth.URL.startsWith("https://"));
+ assert.ok(Auth.SESSION_KEY.includes("auth-session"));
+ assert.equal(Auth.DOMAIN,"ijr.edu.co");
+ assert.ok(html.includes("cad-email-auth.js"));
+ assert.ok(html.includes('id="diagnosticEmail"'));
+ assert.ok(html.includes('id="diagnosticOtp"'));
+ assert.ok(html.includes('id="diagnosticVerify"'));
+ assert.ok(!html.includes('id="diagnosticCode"'));
+ assert.ok(!html.includes('id="diagnosticSelect"'));
 });
 test("all modules retain content / assessment components and profile controls",()=>{
- for(const id of ["diagnosticIdentity","diagnosticCode","diagnosticSelect","diagnosticStudentCode","diagnosticSwitch","diagnosticExport","diagnosticNav","topicGrid","workshop"])
+ for(const id of ["diagnosticIdentity","diagnosticEmail","diagnosticSend","diagnosticOtp","diagnosticVerify","diagnosticStudentCode","diagnosticSwitch","diagnosticExport","diagnosticNav","topicGrid","workshop"])
   assert.ok(html.includes('id="'+id+'"'),"Missing "+id);
  for(const resource of ["module-zero.js","module-zero-visuals.js","module-zero.css","module-zero-ui.js"])
   assert.ok(html.includes(resource));
