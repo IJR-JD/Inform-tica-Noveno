@@ -30,3 +30,12 @@ jobs:
           node --check /tmp/cad-home-inline.js
       - name: Run 26-unit progression and curriculum tests
         run: node --test tests/cad-progress.test.cjs
+      - name: Install browser test runner
+        run: |
+          npm install --no-save playwright@1.57.0
+          npx playwright install --with-deps chromium
+      - name: Verify real UI for all 26 exercises
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/cad-server.log 2>&1 &
+          node tests/cad-browser.cjs
+
