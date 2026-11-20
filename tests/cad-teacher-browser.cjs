@@ -107,7 +107,7 @@ try{
  await page.setViewportSize({width:390,height:844});
  await page.goto("http://127.0.0.1:8765/docente.html",{waitUntil:"load"});
  await page.locator("#teacherDashboard").waitFor({state:"visible"});
- assert.equal(await page.locator("#teacherStudents").textContent(),"1");
+ await page.waitForFunction(()=>document.getElementById("teacherStudents").textContent==="1");
  assert.deepEqual(errors,[]);
  console.log("PASS: OTP role proof, student denied, teacher dashboard, six skills, 24 answers, 26 units, exports and mobile");
 }finally{await browser.close()}
