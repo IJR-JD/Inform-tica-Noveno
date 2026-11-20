@@ -65,6 +65,10 @@ try{
  assert.ok((await page.locator("#teacherAccount").textContent()).includes(teacher));
  assert.equal(await page.locator("#teacherStudents").textContent(),"1");
  assert.equal(await page.locator("#teacherCompleted").textContent(),"1");
+ assert.equal(await page.locator("#teacherLibraryList details").count(),24,"Teacher sees 24 questions and solutions");
+ await page.locator("#teacherShowLessons").click();
+ assert.equal(await page.locator("#teacherLibraryList details").count(),26,"Teacher sees all CAD lesson guides");
+ await page.locator("#teacherShowDiagnostic").click();
  assert.equal(await page.locator("#teacherPractices").textContent(),"1");
  assert.ok((await page.locator("#teacherRows").textContent()).includes(student));
  await page.locator("#teacherRows .teacher-detail-button").click();
