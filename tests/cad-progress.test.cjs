@@ -104,32 +104,30 @@ test("institutional email login rejects external domains, malformed addresses an
  for(const email of ["test@gmail.com","9A-07","student@fakeijr.edu.co","student@ijr.edu.co.invalid","x @ijr.edu.co",""])assert.equal(Auth.validEmail(email),false);
  assert.equal(Auth.authenticated,false);
 });
-test("Módulo 0 login uses Supabase project and email OTP, not code-only login",()=>{
+test("institutional SSO and SQL merge replace OTP while preserving Module 0",()=>{
  const Auth=require("../cad-email-auth.js");
  assert.ok(Auth.URL.startsWith("https://"));
  assert.ok(Auth.SESSION_KEY.includes("auth-session"));
  assert.equal(Auth.DOMAIN,"ijr.edu.co");
- assert.ok(html.includes("cad-email-auth.js"));
- assert.ok(html.includes('id="diagnosticEmail"'));
- assert.ok(html.includes('id="diagnosticOtp"'));
- assert.ok(html.includes('id="diagnosticVerify"'));
- assert.ok(!html.includes('id="diagnosticCode"'));
- assert.ok(!html.includes('id="diagnosticSelect"'));
-});
-test("all modules retain content / assessment components and profile controls",()=>{
- for(const id of ["diagnosticIdentity","diagnosticEmail","diagnosticSend","diagnosticOtp","diagnosticVerify","diagnosticStudentCode","diagnosticSwitch","diagnosticExport","diagnosticNav","topicGrid","workshop"])
+ assert.equal(typeof Auth.beginInstitutionalSignIn,"function");
+ assert.equal(typeof Auth.consumeOAuthRedirect,"function");
+ assert.equal(typeof Auth.saveProgress,"function");
+ const js=fs.readFileSync("cad-email-auth.js","utf8");
+ assert.ok(js.includes("rpc/cad9_merge_course_progress"));
+ assert.ok(!js.includes("/auth/v1/otp"));
+ assert.ok(!js.includes("/auth/v1/verify"));
+ for(const id of ["diagnosticIdentity","diagnosticStudentCode","diagnosticSwitch","diagnosticExport","diagnosticNav","topicGrid","workshop"])
   assert.ok(html.includes('id="'+id+'"'),"Missing "+id);
  for(const resource of ["module-zero.js","module-zero-visuals.js","module-zero.css","module-zero-ui.js"])
   assert.ok(html.includes(resource));
 });
-
 test("all HTML routes share a single verified email entry and protected routes stay hidden until authenticated",()=>{
  const login=fs.readFileSync("index.html","utf8");
  const hub=fs.readFileSync("hub.html","utf8");
  const teacher=fs.readFileSync("docente.html","utf8");
  const gate=fs.readFileSync("hub-gate.js","utf8");
  const flow=fs.readFileSync("login.js","utf8");
- assert.ok(login.includes('id="loginEmail"')&&login.includes('id="loginOtp"'));
+ assert.ok(login.includes('id="loginEmail"')&&!login.includes('id="loginOtp"'));
  assert.ok(login.includes('src="cad-email-auth.js"')&&login.includes('src="login.js"'));
  assert.ok(!login.includes('id="topicGrid"'));
  for(const source of [hub,teacher]){
@@ -137,7 +135,16 @@ test("all HTML routes share a single verified email entry and protected routes s
   assert.ok(source.includes('html:not([data-auth-ready="true"]) body'));
  }
  assert.ok(gate.includes('data-auth-ready')&&gate.includes('auth.init()'));
- assert.ok(flow.includes('A.verifyOtp(')&&flow.includes('A.validEmail('));
+ assert.ok(flow.includes('A.beginInstitutionalSignIn(')&&flow.includes('A.validEmail('));
  assert.ok(flow.includes('new Set(["hub.html","docente.html"])'));
  assert.ok(!flow.includes('eval('));
+});
+
+test("no protected pages present a code input",()=>{
+ for(const path of ["index.html","hub.html","docente.html"]){
+  const content=fs.readFileSync(path,"utf8");
+  assert.ok(!content.includes('id="loginOtp"'));
+  assert.ok(!content.includes('id="diagnosticOtp"'));
+  assert.ok(!content.includes('id="teacherOtp"'));
+ }
 });
