@@ -109,6 +109,6 @@ try{
  await page.locator("#teacherDashboard").waitFor({state:"visible"});
  await page.waitForFunction(()=>document.getElementById("teacherStudents").textContent==="1");
  assert.deepEqual(errors,[]);
- console.log("PASS: OTP role proof, student denied, teacher dashboard, six skills, 24 answers, 26 units, exports and mobile");
+ console.log("PASS: institutional SSO role proof, student denied, teacher dashboard, six skills, 24 answers, 26 units, exports and mobile");
 }finally{await browser.close()}
 })().catch(err=>{console.error(err);process.exit(1)});
