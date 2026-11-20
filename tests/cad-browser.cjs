@@ -27,6 +27,12 @@ const assert=require("node:assert/strict");
   if(path==="/auth/v1/token"){const email=(data.refresh_token||"").replace("demo-refresh-",""),u=person(email);return respond(route,{access_token:"demo-token-"+u.email,refresh_token:"demo-refresh-"+u.email,expires_in:3600,user:u})}
   const u=asUser(req);if(!u)return respond(route,{message:"Unauthorized"},401);
   if(path.endsWith("rpc/cad9_teacher_authorized"))return respond(route,false);
+  if(path.endsWith("rpc/cad9_merge_diagnostic_draft")){
+   const previous=diagnostics.get(u.id)||{user_id:u.id,institutional_email:u.email,answers:{},submitted_at:null,profile:{}};
+   if(previous.submitted_at)return respond(route,previous.answers);
+   previous.answers={...previous.answers,...data.p_answers};diagnostics.set(u.id,previous);
+   return respond(route,previous.answers);
+  }
   if(path.endsWith("rpc/cad9_merge_course_progress")){
    const previous=course.get(u.id)?.progress||{reviewed:[],quizzes:[],exercises:{},attempts:{}};
    const incoming=data.p_progress||{};
