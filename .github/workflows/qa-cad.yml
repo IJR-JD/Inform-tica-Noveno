@@ -4,6 +4,11 @@ on:
     branches: [main]
     paths:
       - 'index.html'
+      - 'hub.html'
+      - 'hub-gate.js'
+      - 'login.js'
+      - 'login.css'
+      - 'ruta-cad.html'
       - 'cad-curriculum.js'
       - 'cad-progress-core.js'
       - 'module-zero.js'
@@ -36,11 +41,13 @@ jobs:
           node --check cad-curriculum.js
           node --check module-zero.js
           node --check cad-email-auth.js
+          node --check hub-gate.js
+          node --check login.js
           node --check docente.js
           node --check module-zero-ui.js
           node --check module-zero-visuals.js
           node --check tests/cad-progress.test.cjs
-          node -e 'const fs=require("fs");const html=fs.readFileSync("index.html","utf8");const m=html.match(/<script>\s*([\s\S]*?)<\/script>/);if(!m)process.exit(2);fs.writeFileSync("/tmp/cad-home-inline.js",m[1])'
+          node -e 'const fs=require("fs");const html=fs.readFileSync("hub.html","utf8");const m=html.match(/<script>\s*([\s\S]*?)<\/script>/);if(!m)process.exit(2);fs.writeFileSync("/tmp/cad-home-inline.js",m[1])'
           node --check /tmp/cad-home-inline.js
       - name: Run 26-unit progression, Module 0 and curriculum tests
         run: node --test tests/cad-progress.test.cjs
