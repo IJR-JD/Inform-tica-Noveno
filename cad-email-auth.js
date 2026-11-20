@@ -95,6 +95,21 @@
   const row={user_id:user.id,institutional_email:user.email,progress,updated_at:new Date().toISOString()};
   return dataApi("cad9_course_progress_v1","POST",row,"?on_conflict=user_id");
  }
+ async function isTeacher(){
+  if(!user)return false;
+  const allowed=await dataApi("rpc/cad9_teacher_authorized","POST",{});
+  return allowed===true;
+ }
+ async function loadClassDiagnostics(){
+  if(!await isTeacher())throw Error("Acceso exclusivo para docentes autorizados.");
+  return dataApi("cad9_diagnostic_results_v1","GET",undefined,
+    "?select=user_id,institutional_email,answers,submitted_at,profile,updated_at&order=institutional_email.asc");
+ }
+ async function loadClassProgress(){
+  if(!await isTeacher())throw Error("Acceso exclusivo para docentes autorizados.");
+  return dataApi("cad9_course_progress_v1","GET",undefined,
+    "?select=user_id,institutional_email,progress,updated_at&order=institutional_email.asc");
+ }
  return {URL,DOMAIN,SESSION_KEY,normalizeEmail,validEmail,onChange,init,requestOtp,verifyOtp,verifySession,signOut,
-  get user(){return user},get authenticated(){return Boolean(user)},loadDiagnostic,saveDiagnostic,loadProgress,saveProgress};
+  get user(){return user},get authenticated(){return Boolean(user)},loadDiagnostic,saveDiagnostic,loadProgress,saveProgress,isTeacher,loadClassDiagnostics,loadClassProgress};
 });
