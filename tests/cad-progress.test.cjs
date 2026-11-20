@@ -114,6 +114,7 @@ test("institutional SSO and SQL merge replace OTP while preserving Module 0",()=
  assert.equal(typeof Auth.saveProgress,"function");
  const js=fs.readFileSync("cad-email-auth.js","utf8");
  assert.ok(js.includes("rpc/cad9_merge_course_progress"));
+ assert.ok(js.includes("rpc/cad9_merge_diagnostic_draft"));
  assert.ok(!js.includes("/auth/v1/otp"));
  assert.ok(!js.includes("/auth/v1/verify"));
  for(const id of ["diagnosticIdentity","diagnosticStudentCode","diagnosticSwitch","diagnosticExport","diagnosticNav","topicGrid","workshop"])
