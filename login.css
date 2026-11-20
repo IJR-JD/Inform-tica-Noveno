@@ -7,3 +7,8 @@
 @media(max-width:900px){.login-main{grid-template-columns:1fr;gap:45px;padding-top:55px}.login-steps{margin-top:35px}.login-intro h1{max-width:650px}.login-card{max-width:650px;width:100%;margin:0 auto}.login-caption{display:none}}
 @media(max-width:550px){.login-main{padding:32px 18px 65px;gap:32px}.login-intro h1{font-size:42px}.login-steps{gap:9px}.login-steps p{font-size:12px}.login-card{padding:26px 20px}.login-footer{flex-direction:column}.login-header{padding:19px 18px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+.login-link-sent{display:grid;gap:12px;margin-top:20px;padding:24px;background:#fff;border:1px solid #b9b9b9}
+.login-link-sent h3{font-size:21px;letter-spacing:-.03em;margin:0}
+.login-link-sent p{line-height:1.65;font-size:14px;color:#484848;margin:0;overflow-wrap:anywhere}
+.login-link-sent .login-sent-icon{font-size:31px;line-height:1}
+.login-link-sent .login-secondary{margin-top:3px}
