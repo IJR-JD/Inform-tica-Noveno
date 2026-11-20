@@ -100,6 +100,7 @@ const assert=require("node:assert/strict");
   await page.locator("#fromWorkshop").click();
  }
  assert.ok((await page.locator("#globalProgressCopy").textContent()).includes("26 / 26"));
+ await page.evaluate(()=>window.waitForCADSync());
  // An obsolete second-device snapshot must not erase server-confirmed completions.
  await page.evaluate(()=>window.IJRCADAuth.saveProgress({reviewed:[],quizzes:[],exercises:{},attempts:{}}));
  assert.equal(course.get(person("test1@ijr.edu.co").id).progress.reviewed.length,26,"Server merges rather than overwrites");
