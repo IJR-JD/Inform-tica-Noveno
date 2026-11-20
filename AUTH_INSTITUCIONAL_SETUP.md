@@ -1,46 +1,30 @@
-# Instituto Jorge Robledo — acceso institucional sin códigos numéricos
+# Informática 9.º — acceso inmediato y progreso protegido
 
-## Corrección aplicada
+Sitio: https://ijr-jd.github.io/Inform-tica-Noveno/  
+Supabase: `rlfxnjbqxbozjdzkbwlz`
 
-El proveedor Google OAuth estaba **desactivado** en el proyecto Supabase y el botón anterior provocaba:
+## Dos niveles de acceso, sin códigos numéricos
 
-```text
-Unsupported provider: provider is not enabled
-```
+**1. Consulta inmediata:** el visitante introduce una dirección con formato `@ijr.edu.co`. El Hub abre las 26 lecciones CAD y el material del diagnóstico para exploración. Se identifica visualmente como **«Consulta sin verificar»**. Esta operación **no es inicio de sesión institucional autenticado**: no atribuye respuestas a una persona, no permite publicar notas ni evidencias, no muestra las soluciones docentes y no concede acceso a los datos privados. La dirección introducida se usa solo para la sesión de consulta en ese navegador.
 
-La página **ya no intenta conectarse al proveedor Google**. En lugar de ello, solicita exclusivamente el correo `@ijr.edu.co` y pide a Supabase Auth que envíe un **enlace mágico** al buzón. El propietario hace clic en el enlace: no se solicita ni se escribe ningún código de acceso.
+**2. Progreso en Supabase:** para que el diagnóstico y las prácticas se asocien al estudiante, debe existir una **identidad Auth verificada** en Supabase. Desde la portada o el aviso del Hub se utiliza **«Verificar mi correo para guardar el progreso»**. Supabase envía un enlace mágico al buzón institucional (sin códigos numéricos). Al abrir el enlace, Supabase crea/revalida la sesión y las tablas guardan los registros bajo el UUID `auth.uid()`, no bajo un texto libre.
 
-La base de datos continúa vinculando cada alumno a su `auth.users.id` comprobado, no a la dirección escrita en un formulario sin verificación.
+Es imposible atribuir datos académicos de forma segura a un estudiante exclusivamente por la dirección que otra persona puede escribir. Tampoco puede obtenerse el rol docente privilegiado de `juandiego.perez@ijr.edu.co` sin una sesión confirmada.
 
-### Requisitos de configuración para funcionamiento real
+## Controles verificados
 
-En el proyecto `rlfxnjbqxbozjdzkbwlz`:
+- `hub-gate.js` distingue `verified session` de `guest preview`; `docente.html` nunca admite invitado.
+- `hub.html` habilita lectura de 26 unidades en consulta, pero deshabilita evaluaciones y guardado, muestra claramente el estado y permite pedir verificación.
+- `module-zero-ui.js` presenta preguntas y opciones para consulta sin revelar soluciones ni registrar diagnóstico hasta que Supabase confirma la cuenta.
+- `cad9_diagnostic_results_v1` y `cad9_course_progress_v1` tienen RLS por UUID y correo institucional verificado.
+- Las funciones `cad9_merge_diagnostic_draft` y `cad9_merge_course_progress` requieren `authenticated` y no conceden acceso anónimo.
 
-1. **Authentication → Providers → Email**: debe estar habilitado el proveedor Email. No se necesita habilitar Google para este acceso.
-2. **Authentication → Email Templates → Magic Link**: utilizar el formato que incluya `{{ .ConfirmationURL }}`. Si la plantilla contiene solamente `{{ .Token }}`, llegará un código numérico y **no** el enlace que espera la interfaz.
-3. **Authentication → URL Configuration**: configurar **Site URL** como `https://ijr-jd.github.io/Inform-tica-Noveno/` y admitir entre las Redirect URLs la portada y las variantes con `?next=hub.html` y `?next=docente.html`.
-4. **Authentication → SMTP**: verificar que se puedan enviar mensajes a **todos** los correos estudiantiles del colegio. El SMTP predeterminado puede tener límites y restricciones de destinatarios; configurar SMTP institucional antes del despliegue masivo.
-5. Realizar prueba de aceptación con una cuenta institucional: enviar enlace, abrirlo, verificar sesión y guardar una práctica. Confirmar la presencia de los datos bajo su UUID en Supabase.
+## Configuración del correo real
 
-Las herramientas de gestión disponibles en esta sesión **no permiten modificar las opciones del proveedor de correo ni su plantilla SMTP**. Esos parámetros requieren habilitación en el Dashboard de Supabase por un administrador de la institución. No confundir una prueba de navegador simulada con una entrega de correo real.
+En Supabase, **Authentication → Providers → Email** debe estar habilitado. En **Email Templates → Magic Link** la plantilla debe incluir `{{ .ConfirmationURL }}`, no solo `{{ .Token }}`. En **URL Configuration**, permitir `https://ijr-jd.github.io/Inform-tica-Noveno/` y sus retornos.
 
-## Rutas y esquema
+El SMTP institucional debe admitir los correos reales y el volumen previsto de estudiantes. La prueba end-to-end de GitHub utiliza sesiones simuladas: verificar la recepción de un enlace y un guardado en Supabase con una cuenta real antes de exigir el registro escolar.
 
-- Entrada pública: https://ijr-jd.github.io/Inform-tica-Noveno/
-- Learning Hub protegido: `hub.html` (se redirige a la portada sin sesión válida).
-- `cad9_diagnostic_results_v1`: diagnóstico, respuestas y perfil, protegido por RLS.
-- `cad9_course_progress_v1`: 26 unidades CAD, avance y evidencias, protegido por RLS.
-- `cad9_merge_diagnostic_draft(jsonb)`: fusión transaccional de borradores.
-- `cad9_merge_course_progress(jsonb)`: combinación transaccional de avances que conserva registros anteriores.
+## Limitaciones
 
-La cuenta especial `juandiego.perez@ijr.edu.co` conserva acceso a todo el contenido en el Hub, tras autenticarse mediante su buzón institucional.
-
-## Seguridad y privacidad
-
-La aplicación comprueba que el correo **verificado por Supabase** corresponde a `@ijr.edu.co`. Que una persona sepa una dirección ajena no la autoriza a consultar su progreso: debe poder abrir el enlace recibido en ese buzón. Las sesiones quedan vinculadas a UUID y las políticas RLS protegen cada registro.
-
-Los HTML y scripts de GitHub Pages siguen siendo públicamente descargables; los **datos académicos** están protegidos por Supabase, no por ocultar el código del sitio.
-
-## QA
-
-Las pruebas locales/CI deben simular la solicitud del enlace y el regreso con sesión Supabase, además de verificar perfiles separados, resultados, 26 lecciones, recarga, vista móvil y cierre de sesión. La activación real de correo requiere una prueba fuera de las simulaciones.
+GitHub Pages sirve recursos estáticos públicos: no puede impedir la descarga de fuentes del sitio; la privacidad de resultados académicos depende de Auth y RLS. La consulta sin verificar no constituye evidencia de identidad, asistencia, cumplimiento, ni respaldo de progreso. Para entrar directamente *con identidad real y sin enlace*, debe habilitarse el SSO institucional gestionado por el colegio (Google Workspace o Microsoft Entra).
