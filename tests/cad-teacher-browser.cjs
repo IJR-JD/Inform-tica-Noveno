@@ -29,7 +29,7 @@ const userFor=request=>{
 await page.route("https://rlfxnjbqxbozjdzkbwlz.supabase.co/**",async route=>{
  const req=route.request(),url=new URL(req.url()),path=url.pathname,body=req.method()==="POST"?JSON.parse(req.postData()||"{}"):{};
  if(path==="/auth/v1/authorize"){const destination=url.searchParams.get("redirect_to");return route.fulfill({status:302,headers:{location:destination+"#access_token="+encodeURIComponent("fake-"+selectedEmail)+"&refresh_token="+encodeURIComponent("fake-refresh-"+selectedEmail)+"&expires_in=3600"},body:""})}
- if(path==="/auth/v1/otp")return reply(route,{},410);
+ if(path==="/auth/v1/otp")return reply(route,{});
  if(path==="/auth/v1/verify"){
   const u=users.get(body.email);
   if(!u||body.token!=="123456")return reply(route,{message:"Código incorrecto"},403);
@@ -46,10 +46,13 @@ await page.route("https://rlfxnjbqxbozjdzkbwlz.supabase.co/**",async route=>{
  return reply(route,{message:"Ruta desconocida"},404);
 });
 const errors=[];page.on("pageerror",err=>errors.push(err.message));
-async function login(email){
+async function login(email,returnTo="docente.html"){
  selectedEmail=email;
  await page.locator("#loginEmail").fill(email);
  await page.locator("#loginSend").click();
+ await page.locator("#loginLinkSent").waitFor({state:"visible"});
+ const url="http://127.0.0.1:8765/?next="+returnTo+"#access_token="+encodeURIComponent("fake-"+email)+"&refresh_token="+encodeURIComponent("fake-refresh-"+email)+"&expires_in=3600";
+ await page.goto(url,{waitUntil:"load"});
 }
 
 try{
