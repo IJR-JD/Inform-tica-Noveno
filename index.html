@@ -24,22 +24,23 @@
   <p class="login-lead">Usa tu correo institucional para acceder a tu diagnóstico, las prácticas de modelado 3D y tu progreso, sincronizado con Supabase.</p>
   <div class="login-steps" aria-label="Proceso de acceso">
    <div><span>01</span><p>Escribe tu correo institucional.</p></div>
-   <div><span>02</span><p>Selecciona tu cuenta institucional de Google.</p></div>
+   <div><span>02</span><p>Abre el enlace enviado a tu correo institucional.</p></div>
    <div><span>03</span><p>Continúa al entorno de aprendizaje.</p></div>
   </div>
  </section>
  <section class="login-card" aria-labelledby="formTitle">
   <p class="login-kicker">ACCESO SEGURO · SUPABASE</p>
   <h2 id="formTitle">Iniciar sesión</h2>
-  <p id="loginHelp">Escribe tu correo institucional y continúa con tu cuenta Google del colegio. No enviaremos códigos de acceso.</p>
+  <p id="loginHelp">Escribe tu correo del colegio y recibirás un enlace para ingresar directamente. No se utilizan códigos numéricos ni contraseñas del Hub.</p>
   <form id="loginEmailForm" autocomplete="on">
    <label for="loginEmail">Correo institucional</label>
    <input id="loginEmail" type="email" name="email" autocomplete="email" inputmode="email" maxlength="254" placeholder="estudiante@ijr.edu.co" required>
-   <button id="loginSend" class="login-primary" type="submit">Continuar con correo institucional <span aria-hidden="true">→</span></button>
+   <button id="loginSend" class="login-primary" type="submit">Enviar enlace de ingreso <span aria-hidden="true">→</span></button>
   </form>
+  <section id="loginLinkSent" class="login-link-sent" aria-label="Revisa tu correo" hidden><div class="login-sent-icon" aria-hidden="true">✉</div><h3>Revisa tu correo institucional</h3><p>Enviamos un enlace de ingreso a <strong id="loginLinkEmail"></strong>. Ábrelo en este navegador para continuar. También puedes revisar la carpeta de correo no deseado.</p><button type="button" class="login-secondary" id="loginChangeEmail">Utilizar otro correo</button></section>
   <div id="loginLoading" class="login-loading" role="status" hidden>Validando tu sesión institucional…</div>
   <p id="loginMessage" class="login-message" role="status" aria-live="polite"></p>
-  <div class="login-privacy"><span aria-hidden="true">◈</span><p>Tu correo se confirma con Google institucional y Supabase Auth. Tus registros se vinculan a la cuenta verificada, no a un código escrito manualmente.</p></div>
+  <div class="login-privacy"><span aria-hidden="true">◈</span><p>Tu correo se verifica mediante un enlace de Supabase Auth. Tus registros se vinculan a la cuenta verificada, no a un código escrito manualmente.</p></div>
  </section>
 </main>
 <footer class="login-footer"><span>INSTITUTO JORGE ROBLEDO · INFORMÁTICA 9.º</span><span>Diagnóstico · Lógica · Geometría · Diseño CAD</span></footer>
