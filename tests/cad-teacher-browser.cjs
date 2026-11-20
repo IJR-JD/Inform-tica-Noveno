@@ -62,9 +62,9 @@ try{
  assert.equal(await page.locator("#teacherDashboard").isVisible(),false,"Student cannot access class reports");
  await page.locator("#teacherSignOut").click();
  await page.waitForURL(/\/$|\/index\.html$/);
+ await page.goto("http://127.0.0.1:8765/?next=docente.html",{waitUntil:"load"});
  await login(teacher);
- await page.waitForURL(/\/hub\.html$/);
- await page.goto("http://127.0.0.1:8765/docente.html",{waitUntil:"load"});
+ await page.waitForURL(/\/docente\.html$/);
  await page.locator("#teacherDashboard").waitFor({state:"visible"});
  await page.locator("#teacherRows tr").first().waitFor({state:"visible"});
  assert.ok((await page.locator("#teacherAccount").textContent()).includes(teacher));
