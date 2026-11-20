@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Panel docente · Informática 9.º | IJR</title>
+<link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="cad-polish.css"><link rel="stylesheet" href="cad-accessibility.css">
+<link rel="stylesheet" href="docente.css">
+<script src="cad-email-auth.js"></script><script src="cad-progress-core.js"></script><script src="module-zero.js"></script>
+<script defer src="docente.js"></script>
+</head>
+<body>
+<header class="topbar"><a class="brand" href="./"><span class="brand-mark">IJR</span><span><small>Instituto Jorge Robledo · Informática 9.º</small><strong>Panel de seguimiento docente</strong></span></a><div class="top-actions"><a class="button button-light" href="./">Volver al Learning Hub</a><button id="teacherSignOut" type="button" class="button button-light app-hidden">Cerrar sesión</button></div></header>
+<main class="hub-shell teacher-shell">
+<section class="teacher-hero"><p class="eyebrow">DOCENCIA · SEGUIMIENTO PEDAGÓGICO</p><h1>Resultados y evolución de los estudiantes.</h1><p>Acceso exclusivo para personal autorizado. Consulta diagnósticos, competencias, prácticas y progreso en CAD. Los datos se presentan en modo de solo lectura.</p></section>
+<section id="teacherLogin" class="teacher-panel">
+<h2>Verificar correo institucional docente</h2>
+<p>Ingresa con tu dirección institucional autorizada y el código enviado por Supabase Auth.</p>
+<label for="teacherEmail">Correo institucional</label><input id="teacherEmail" type="email" maxlength="254" autocomplete="email" placeholder="docente@ijr.edu.co">
+<button id="teacherSend" class="button button-dark" type="button">Enviar código de verificación</button>
+<div id="teacherOtpZone" class="app-hidden teacher-login-step">
+<label for="teacherOtp">Código temporal recibido</label><input id="teacherOtp" type="text" inputmode="numeric" maxlength="8" autocomplete="one-time-code" placeholder="Código de acceso">
+<button id="teacherVerify" class="button button-dark" type="button">Verificar identidad</button>
+</div><p id="teacherAuthStatus" role="status" aria-live="polite"></p>
+</section>
+<section id="teacherDenied" class="teacher-panel app-hidden"><h2>Acceso no autorizado</h2><p id="teacherDeniedReason">Este correo no tiene permisos docentes para consultar resultados de otros estudiantes.</p><a class="button button-light" href="./">Volver al Learning Hub</a></section>
+<section id="teacherDashboard" class="app-hidden">
+<div class="teacher-identity"><span id="teacherAccount" class="eyebrow"></span><span class="teacher-role">Acceso docente verificado · Solo lectura</span></div>
+<div class="teacher-stats" aria-label="Indicadores generales">
+<article><p>Estudiantes con registro</p><strong id="teacherStudents">0</strong></article>
+<article><p>Diagnósticos finalizados</p><strong id="teacherCompleted">0</strong></article>
+<article><p>Media diagnóstica</p><strong id="teacherAverage">—</strong></article>
+<article><p>Prácticas CAD registradas</p><strong id="teacherPractices">0</strong></article>
+</div>
+<div class="teacher-toolbar"><div><h2>Seguimiento individual</h2><p>Selecciona un correo para consultar fortalezas, necesidades de refuerzo y evidencias registradas.</p></div><div class="teacher-actions"><button id="teacherRefresh" class="button button-light" type="button">Actualizar</button><button id="teacherExportCsv" class="button button-dark" type="button">Exportar resumen CSV</button><button id="teacherExportJson" class="button button-light" type="button">Exportar registros JSON</button></div></div>
+<label for="teacherSearch" class="teacher-label">Buscar estudiante por correo institucional</label>
+<input id="teacherSearch" type="search" placeholder="Filtrar estudiantes..." autocomplete="off">
+<p id="teacherDataStatus" role="status" aria-live="polite"></p>
+<div class="teacher-table-wrap"><table class="teacher-table"><thead><tr><th scope="col">Correo institucional</th><th scope="col">Diagnóstico</th><th scope="col">Nivel orientativo</th><th scope="col">Unidades CAD</th><th scope="col">Detalle</th></tr></thead><tbody id="teacherRows"></tbody></table></div>
+<section id="teacherDetail" class="teacher-detail app-hidden" aria-live="polite"><div class="teacher-detail-head"><h2 id="teacherDetailTitle"></h2><button id="teacherCloseDetail" class="button button-light" type="button">Cerrar detalle</button></div><p id="teacherDetailIntro"></p><div id="teacherDomainStats" class="teacher-domains"></div><h3>Recomendaciones</h3><div id="teacherRecommendations"></div><h3>Registro de las 26 unidades CAD</h3><div id="teacherUnitRecords" class="teacher-units"></div><details class="teacher-answer-review"><summary>Revisar respuestas del examen diagnóstico</summary><div id="teacherAnswers"></div></details></section>
+</section>
+</main>
+<footer class="teacher-footer">Instituto Jorge Robledo · Consulta docente de solo lectura · Los resultados son orientativos y requieren interpretación pedagógica.</footer>
+</body></html>
