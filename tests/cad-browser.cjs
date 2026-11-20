@@ -65,7 +65,10 @@ const assert=require("node:assert/strict");
  assert.equal(emailLinkRequests,1);
  const link1="http://127.0.0.1:8765/?next=hub.html#access_token="+encodeURIComponent("demo-token-"+selectedEmail)+"&refresh_token="+encodeURIComponent("demo-refresh-"+selectedEmail)+"&expires_in=3600";
  await page.goto(link1,{waitUntil:"load"});
- await page.waitForURL(/\/hub\.html$/);
+ await page.waitForURL(/\/hub\.html$/,{timeout:10000}).catch(async()=>{
+   const view=await page.evaluate(()=>({url:location.href,message:document.getElementById("loginMessage")?.textContent,ready:document.documentElement.getAttribute("data-auth-ready")}));
+   throw Error("Magic-link callback did not reach hub: "+JSON.stringify(view)+" JS errors: "+errors.join(" | "));
+ });
  await page.locator("#topicGrid .hub-topic-card").first().waitFor();
  await page.waitForFunction(()=>document.documentElement.getAttribute("data-auth-ready")==="true");
  assert.equal(await page.locator("#topicGrid .hub-topic-card").count(),26);
