@@ -18,3 +18,16 @@ body{background:#fff;color:#171717}.app-hidden{display:none!important}.teacher-s
 .teacher-answer-review{margin-top:33px;padding:20px;border:1px solid #bbb}.teacher-answer-review summary{cursor:pointer;font-weight:750}.teacher-answer-review p{padding:12px 0;border-bottom:1px solid #e0e0e0;line-height:1.6}.teacher-footer{text-align:center;border-top:1px solid #ddd;padding:24px 10px;color:#555;font-size:.9rem}
 @media(max-width:880px){.teacher-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.teacher-domains{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:550px){.teacher-stats,.teacher-domains,.teacher-units{grid-template-columns:1fr}.teacher-panel .button{width:100%}.teacher-toolbar h2{font-size:1.55rem}}
+
+.teacher-library{padding:35px 0;margin-top:46px;border-top:2px solid #111}
+.teacher-library>h2{font-size:clamp(1.6rem,3vw,2.4rem);letter-spacing:-.03em;margin:15px 0}
+.teacher-library>p{max-width:900px;line-height:1.65}
+.teacher-library-tabs{display:flex;flex-wrap:wrap;gap:12px;margin:24px 0}
+.teacher-library-list{display:grid;gap:10px}
+.teacher-library-list details{border:1px solid #c7c7c7;background:#fafafa;padding:18px 20px}
+.teacher-library-list summary{font-weight:750;cursor:pointer;line-height:1.55}
+.teacher-library-list details[open]{background:#fff;border-color:#555}
+.teacher-library-list p{margin:14px 0;line-height:1.75}
+.teacher-library-list ol{padding-left:28px;line-height:1.75}
+.teacher-library-list li{margin:7px 0}
+@media(max-width:540px){.teacher-library-tabs .button{width:100%}}
