@@ -45,21 +45,26 @@ await page.route("https://rlfxnjbqxbozjdzkbwlz.supabase.co/**",async route=>{
 });
 const errors=[];page.on("pageerror",err=>errors.push(err.message));
 async function login(email){
- await page.locator("#teacherEmail").fill(email);
- await page.locator("#teacherSend").click();
- await page.locator("#teacherOtpZone").waitFor({state:"visible"});
- await page.locator("#teacherOtp").fill("123456");
- await page.locator("#teacherVerify").click();
+ await page.locator("#loginEmail").fill(email);
+ await page.locator("#loginSend").click();
+ await page.locator("#loginOtpForm").waitFor({state:"visible"});
+ await page.locator("#loginOtp").fill("123456");
+ await page.locator("#loginVerify").click();
 }
+
 try{
  await page.goto("http://127.0.0.1:8765/docente.html",{waitUntil:"load"});
- await page.locator("#teacherLogin").waitFor({state:"visible"});
+ await page.waitForURL(/\/\?next=docente\.html|\/index\.html\?next=docente\.html/);
+ assert.equal(await page.locator("#teacherDashboard").count(),0,"Protected docente page redirects before login");
  await login(student);
+ await page.waitForURL(/\/docente\.html$/);
  await page.locator("#teacherDenied").waitFor({state:"visible"});
  assert.equal(await page.locator("#teacherDashboard").isVisible(),false,"Student cannot access class reports");
  await page.locator("#teacherSignOut").click();
- await page.locator("#teacherLogin").waitFor({state:"visible"});
+ await page.waitForURL(/\/$|\/index\.html$/);
  await login(teacher);
+ await page.waitForURL(/\/hub\.html$/);
+ await page.goto("http://127.0.0.1:8765/docente.html",{waitUntil:"load"});
  await page.locator("#teacherDashboard").waitFor({state:"visible"});
  await page.locator("#teacherRows tr").first().waitFor({state:"visible"});
  assert.ok((await page.locator("#teacherAccount").textContent()).includes(teacher));
@@ -81,7 +86,7 @@ try{
  assert.ok((await csvPromise).suggestedFilename().endsWith(".csv"));
  const jsonPromise=page.waitForEvent("download");await page.locator("#teacherExportJson").click();
  assert.ok((await jsonPromise).suggestedFilename().endsWith(".json"));
- await page.goto("http://127.0.0.1:8765/index.html",{waitUntil:"load"});
+ await page.goto("http://127.0.0.1:8765/hub.html",{waitUntil:"load"});
  await page.waitForFunction(()=>document.querySelector("#topicGrid .hub-topic-card:last-child .theory-action")?.disabled===false);
  assert.equal(await page.locator("#teacherAccessLink").count(),0,"No teacher dashboard link in student hub");
  assert.equal(await page.locator("#topicGrid .hub-topic-card").count(),26);
