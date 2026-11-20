@@ -232,7 +232,7 @@ $("continueNext").onclick=()=>openTheory(active+1);
 $("prevTopic").onclick=()=>openTheory(active-1);
 $("nextTopic").onclick=()=>openTheory(active+1);
 window.refreshCADHome=cards;window.returnCADHome=()=>setView("overview");
-if(window.IJRGuest&&!window.IJRCADAuth.authenticated)window.setGuestAccess(true)document.getElementById("hubSignOut").onclick=async()=>{
+if(window.IJRGuest&&!window.IJRCADAuth.authenticated)window.setGuestAccess(true);document.getElementById("hubSignOut").onclick=async()=>{
  await window.waitForCADSync();
  try{sessionStorage.removeItem("ijr-cad9-guest-v1")}catch{}
  await window.IJRCADAuth.signOut();window.location.replace("./")
