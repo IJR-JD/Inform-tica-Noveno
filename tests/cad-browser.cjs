@@ -55,7 +55,7 @@ const assert=require("node:assert/strict");
  selectedEmail="test1@ijr.edu.co";
  await page.locator("#loginEmail").fill(selectedEmail);
  await page.locator("#loginSend").click();
- await page.waitForURL(/\/hub\.html$/);
+ await page.waitForURL(/\/hub\.html$/,{timeout:9000}).catch(async()=>{throw Error("OAuth redirect did not complete. URL="+page.url()+" message="+(await page.locator("#loginMessage").textContent().catch(()=>"missing"))+" errors="+errors.join(";"))});
  await page.locator("#topicGrid .hub-topic-card").first().waitFor();
  await page.waitForFunction(()=>document.documentElement.getAttribute("data-auth-ready")==="true");
  assert.equal(await page.locator("#topicGrid .hub-topic-card").count(),26);
