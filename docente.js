@@ -114,7 +114,7 @@ function downloadFile(filename,mime,content){
  setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
 function quoteCsv(value){
- const safe=String(value??"").replace(/[\r\n]+/g," ").replace(/^[=+\-@]/,"'$("teacherRefresh").onclick=load;$("teacherSearch").oninput=render;");
+ const safe=String(value??"").replace(/[\r\n]+/g," ").replace(/^[=+\-@]/,"'$&");
  return '"'+safe.replace(/"/g,'""')+'"';
 }
 function exportSummary(){
