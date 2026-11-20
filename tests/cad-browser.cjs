@@ -94,6 +94,11 @@ const assert=require("node:assert/strict");
   await page.locator("#fromWorkshop").click();
  }
  assert.ok((await page.locator("#globalProgressCopy").textContent()).includes("26 / 26"));
+ // An obsolete second-device snapshot must not erase server-confirmed completions.
+ await page.evaluate(()=>window.IJRCADAuth.saveProgress({reviewed:[],quizzes:[],exercises:{},attempts:{}}));
+ assert.equal(course.get(person("test1@ijr.edu.co").id).progress.reviewed.length,26,"Server merges rather than overwrites");
+ assert.equal(Object.keys(course.get(person("test1@ijr.edu.co").id).progress.exercises).length,26,"All evidence remains on Supabase");
+
  await page.reload();await page.locator("#topicGrid .hub-topic-card").first().waitFor();
  await page.waitForFunction(()=>document.getElementById("globalProgressCopy").textContent.includes("26 / 26"));
  assert.equal(diagnostics.size,1);
@@ -113,6 +118,6 @@ const assert=require("node:assert/strict");
  assert.equal(await page.locator("#diagnosticSubmit").isDisabled(),true,"Different user never inherits diagnostic");
  assert.equal(otpCalls,0,"No code-based authentication requests");
  assert.equal(errors.length,0,"JavaScript browser exceptions: "+errors.join("; "));
- console.log("PASS: institutional email OTP, domain rejection, Supabase mock with owner isolation, 24 visual diagnostic items, six-domain profile, all 26 CAD units, reload and mobile.");
+ console.log("PASS: code-free institutional OAuth, email domain enforcement, atomic progress merge, 24 diagnostic visuals, 26 CAD lessons, student isolation, reload and mobile.");
  await browser.close();
 })().catch(e=>{console.error(e);process.exit(1)});
