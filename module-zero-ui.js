@@ -3,7 +3,7 @@
  "use strict";
  const D=window.IJRDiagnostic,A=window.IJRCADAuth,$=id=>document.getElementById(id);
  const DRAFT_PREFIX="ijr-cad9-draft-auth-v1-";
- let state={answers:{},submitted:false,submittedAt:null},current=0,pendingEmail="",saving=false;
+ let state={answers:{},submitted:false,submittedAt:null},current=0,pendingEmail="",saving=false,teacherMode=false;
  const ident=$("diagnosticIdentity"),nav=$("diagnosticNav"),body=$("diagnosticBody");
  const notice=$("diagnosticNotice"),status=$("diagnosticIdentityStatus");
  function setStatus(message){status.textContent=message}
@@ -22,7 +22,7 @@
   return result;
  }
  async function hydrate(){
-  if(!A.authenticated){state={answers:{},submitted:false,submittedAt:null};window.setTeacherAccess?.(false);window.setDiagnosticComplete?.(false);await window.refreshStudentProgress?.();render();return}
+  if(!A.authenticated){state={answers:{},submitted:false,submittedAt:null};teacherMode=false;window.setTeacherAccess?.(false);window.setDiagnosticComplete?.(false);await window.refreshStudentProgress?.();render();return}
   state={answers:{},submitted:false,submittedAt:null};
   try{
    const row=await A.loadDiagnostic();
@@ -39,6 +39,7 @@
    try{state.answers=D.validAnswers(JSON.parse(localStorage.getItem(draftKey())||"{}").answers)}catch{}
   }
   let teacher=false;try{teacher=await A.isTeacher()}catch(error){console.warn("No se pudo comprobar el acceso docente:",error.message)}
+  teacherMode=teacher;
   window.setTeacherAccess?.(teacher);
   window.setDiagnosticComplete?.(state.submitted);
   await window.refreshStudentProgress?.();
@@ -48,13 +49,13 @@
   const logged=A.authenticated;
   hide(ident,logged);hide($("diagnosticActiveStudent"),!logged);
   $("diagnosticStudentCode").textContent=logged?"Correo verificado: "+A.user.email:"";
-  hide(nav,!logged||state.submitted);hide(body,!logged);
-  for(const id of ["diagnosticPrev","diagnosticNext","diagnosticSubmit"])hide($(id),!logged||state.submitted);
-  hide($("diagnosticGoCAD"),!logged||!state.submitted);
-  hide($("diagnosticExport"),!logged||!state.submitted);
+  hide(nav,!logged||state.submitted||teacherMode);hide(body,!logged);
+  for(const id of ["diagnosticPrev","diagnosticNext","diagnosticSubmit"])hide($(id),!logged||state.submitted||teacherMode);
+  hide($("diagnosticGoCAD"),!logged||(!state.submitted&&!teacherMode));
+  hide($("diagnosticExport"),!logged||!state.submitted||teacherMode);
   if(!logged){$("diagnosticCounter").textContent="0 / "+D.questions.length;$("diagnosticBar").style.width="0%"}
-  $("diagnosticCardStatus").textContent=logged?(state.submitted?"PERFIL COMPLETADO":"EVALUACIÓN PENDIENTE"):"CORREO INSTITUCIONAL REQUERIDO";
-  $("openDiagnostic").textContent=logged&&state.submitted?"Consultar mi perfil":"Iniciar diagnóstico →";
+  $("diagnosticCardStatus").textContent=teacherMode?"CONTENIDO COMPLETO · ACCESO LIBRE":logged?(state.submitted?"PERFIL COMPLETADO":"EVALUACIÓN PENDIENTE"):"CORREO INSTITUCIONAL REQUERIDO";
+  $("openDiagnostic").textContent=teacherMode?"Revisar Módulo 0 y soluciones →":logged&&state.submitted?"Consultar mi perfil":"Iniciar diagnóstico →";
   return logged;
  }
  function view(){
@@ -129,7 +130,25 @@
   $("diagnosticBar").style.width="100%";
   setNotice("Diagnóstico guardado en Supabase bajo tu cuenta institucional.");
  }
- function render(){if(!presentAuth())return;if(state.submitted)summary();else question()}
+ function teacherPreview(){
+  body.replaceChildren();
+  const tag=document.createElement("p");tag.className="eyebrow";tag.textContent="MÓDULO 0 · CONSULTA LIBRE AUTORIZADA";body.append(tag);
+  const heading=document.createElement("h2");heading.textContent="24 preguntas, figuras y soluciones";body.append(heading);
+  const intro=document.createElement("p");intro.textContent="Puedes revisar todas las preguntas y las claves sin presentar el diagnóstico, registrar respuestas ni modificar resultados de estudiantes.";body.append(intro);
+  D.questions.forEach(q=>{
+   const section=document.createElement("details");section.className="diagnostic-review";
+   const summary=document.createElement("summary");summary.textContent=String(q.id).padStart(2,"0")+" · "+q.category+" · "+q.prompt;
+   section.append(summary,window.IJRVisuals.build(q.id));
+   const options=document.createElement("p");options.textContent="Opciones: "+q.options.join(" | ");
+   const answer=document.createElement("p");answer.textContent="Respuesta correcta: "+q.options[q.correct];
+   const explanation=document.createElement("p");explanation.textContent="Explicación: "+q.explanation;
+   section.append(options,answer,explanation);body.append(section);
+  });
+  $("diagnosticCounter").textContent=D.questions.length+" preguntas disponibles";
+  $("diagnosticBar").style.width="100%";
+  setNotice("Vista libre de consulta. No se modifica el avance estudiantil.");
+ }
+ function render(){if(!presentAuth())return;if(teacherMode)teacherPreview();else if(state.submitted)summary();else question()}
  async function send(){
   const email=A.normalizeEmail($("diagnosticEmail").value);
   if(!A.validEmail(email)){setStatus("Utiliza un correo @"+A.DOMAIN+".");return}
