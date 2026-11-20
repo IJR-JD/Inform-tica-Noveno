@@ -90,20 +90,6 @@ async function authorize(){
   if(isReady){$("teacherAccount").textContent="Docente: "+A.user.email;library("diagnostic");await load()}
  }catch(e){show("teacherDenied",true);$("teacherDeniedReason").textContent="No se pudo verificar el rol: "+e.message}
 }
-async function send(){
- const email=A.normalizeEmail($("teacherEmail").value);
- if(!A.validEmail(email)){$("teacherAuthStatus").textContent="Utiliza tu correo @ijr.edu.co.";return}
- $("teacherSend").disabled=true;
- try{pending=await A.requestOtp(email);show("teacherOtpZone",true);$("teacherAuthStatus").textContent="Introduce el código recibido."}
- catch(e){$("teacherAuthStatus").textContent=e.message}
- finally{$("teacherSend").disabled=false}
-}
-async function verify(){
- $("teacherVerify").disabled=true;
- try{await A.verifyOtp(pending,$("teacherOtp").value);await authorize()}
- catch(e){$("teacherAuthStatus").textContent=e.message}
- finally{$("teacherVerify").disabled=false}
-}
 function library(mode){
  if(!isReady)return;
  const output=$("teacherLibraryList");output.replaceChildren();
@@ -144,9 +130,9 @@ function library(mode){
   });
  }
 }
-$("teacherSend").onclick=send;$("teacherShowDiagnostic").onclick=()=>library("diagnostic");$("teacherShowLessons").onclick=()=>library("lessons");$("teacherVerify").onclick=verify;
-$("teacherEmail").onkeydown=e=>{if(e.key==="Enter")send()};
-$("teacherOtp").onkeydown=e=>{if(e.key==="Enter")verify()};
+$("teacherShowDiagnostic").onclick=()=>library("diagnostic");$("teacherShowLessons").onclick=()=>library("lessons");
+
+
 function downloadFile(filename,mime,content){
  if(!isReady)return;
  const blob=new Blob([content],{type:mime}),url=URL.createObjectURL(blob),a=document.createElement("a");
