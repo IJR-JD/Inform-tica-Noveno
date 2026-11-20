@@ -178,6 +178,6 @@ function exportRecords(){
 }
 $("teacherRefresh").onclick=load;$("teacherSearch").oninput=render;$("teacherExportCsv").onclick=exportSummary;$("teacherExportJson").onclick=exportRecords;
 $("teacherCloseDetail").onclick=()=>show("teacherDetail",false);
-$("teacherSignOut").onclick=async()=>{await A.signOut();records=[];await authorize()};
+$("teacherSignOut").onclick=async()=>{await A.signOut();records=[];window.location.replace("./")};
 A.init().then(authorize).catch(e=>{$("teacherAuthStatus").textContent=e.message});
 })();
