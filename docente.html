@@ -13,16 +13,7 @@
 <header class="topbar"><a class="brand" href="./"><span class="brand-mark">IJR</span><span><small>Instituto Jorge Robledo · Informática 9.º</small><strong>Panel de seguimiento docente</strong></span></a><div class="top-actions"><a class="button button-light" href="./">Volver al Learning Hub</a><button id="teacherSignOut" type="button" class="button button-light app-hidden">Cerrar sesión</button></div></header>
 <main class="hub-shell teacher-shell">
 <section class="teacher-hero"><p class="eyebrow">DOCENCIA · SEGUIMIENTO PEDAGÓGICO</p><h1>Resultados y evolución de los estudiantes.</h1><p>Acceso exclusivo para personal autorizado. Consulta diagnósticos, competencias, prácticas y progreso en CAD. Los datos se presentan en modo de solo lectura.</p></section>
-<section id="teacherLogin" class="teacher-panel">
-<h2>Verificar correo institucional docente</h2>
-<p>Ingresa con tu dirección institucional autorizada y el código enviado por Supabase Auth.</p>
-<label for="teacherEmail">Correo institucional</label><input id="teacherEmail" type="email" maxlength="254" autocomplete="email" placeholder="docente@ijr.edu.co">
-<button id="teacherSend" class="button button-dark" type="button">Enviar código de verificación</button>
-<div id="teacherOtpZone" class="app-hidden teacher-login-step">
-<label for="teacherOtp">Código temporal recibido</label><input id="teacherOtp" type="text" inputmode="numeric" maxlength="8" autocomplete="one-time-code" placeholder="Código de acceso">
-<button id="teacherVerify" class="button button-dark" type="button">Verificar identidad</button>
-</div><p id="teacherAuthStatus" role="status" aria-live="polite"></p>
-</section>
+<section id="teacherLogin" class="teacher-panel app-hidden"><h2>Acceso institucional requerido</h2><p>Ingresa desde la página principal con tu correo del colegio y cuenta Google institucional. No se utilizan códigos de acceso.</p><a class="button button-dark" href="./?next=docente.html">Ir a inicio de sesión</a><p id="teacherAuthStatus" role="status"></p></section>
 <section id="teacherDenied" class="teacher-panel app-hidden"><h2>Acceso no autorizado</h2><p id="teacherDeniedReason">Este correo no tiene permisos docentes para consultar resultados de otros estudiantes.</p><a class="button button-light" href="./">Volver al Learning Hub</a></section>
 <section id="teacherDashboard" class="app-hidden">
 <div class="teacher-identity"><span id="teacherAccount" class="eyebrow"></span><span class="teacher-role">Acceso docente verificado · Solo lectura</span></div>
