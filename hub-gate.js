@@ -15,6 +15,7 @@ if(!auth){loginRoute();return}
 auth.init().then(user=>{
  if(!user){loginRoute();return}
  document.documentElement.setAttribute("data-auth-pending","false");
+ document.documentElement.setAttribute("data-auth-ready","true");
  window.dispatchEvent(new CustomEvent("ijr-session-ready",{detail:{email:user.email}}));
 }).catch(()=>loginRoute());
 })();
