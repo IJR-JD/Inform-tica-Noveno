@@ -48,6 +48,23 @@
   url.searchParams.set("redirect_to",callback.href);
   window.location.assign(url.href);
  }
+ async function sendInstitutionalLink(email,returnTo){
+  const value=normalizeEmail(email);
+  if(!validEmail(value))throw Error("Utiliza exclusivamente un correo institucional @"+DOMAIN+".");
+  if(typeof window==="undefined"||!window.location)throw Error("El acceso requiere un navegador.");
+  const dest=(new Set(["hub.html","docente.html"])).has(returnTo)?returnTo:"hub.html";
+  const callback=new window.URL("./",window.location.href);
+  callback.searchParams.set("next",dest);
+  // Supabase email provider sends a one-click confirmation link; never an in-app numeric code.
+  // The Supabase email template must use {{ .ConfirmationURL }}.
+  const redirect=callback.href;
+  const response=await request("/auth/v1/otp?redirect_to="+encodeURIComponent(redirect),{
+   method:"POST",
+   body:JSON.stringify({email:value,create_user:true})
+  });
+  try{sessionStorage.setItem(OAUTH_EMAIL_KEY,value)}catch{}
+  return {email:value,redirect,response};
+ }
  async function consumeOAuthRedirect(){
   if(typeof window==="undefined")return null;
   const h=new URLSearchParams(window.location.hash.replace(/^#/,""));
@@ -59,9 +76,9 @@
   if(!h.has("access_token"))return null;
   const received={access_token:h.get("access_token"),refresh_token:h.get("refresh_token"),expires_in:Number(h.get("expires_in")||3600)};
   const verified=await request("/auth/v1/user",{headers:{Authorization:"Bearer "+received.access_token}});
-  if(!validEmail(verified.email))throw Error("La cuenta Google no pertenece al dominio institucional.");
+  if(!validEmail(verified.email))throw Error("La cuenta verificada no pertenece al dominio institucional.");
   const expected=sessionStorage.getItem(OAUTH_EMAIL_KEY);
-  if(expected&&normalizeEmail(verified.email)!==expected)throw Error("Seleccionaste otra cuenta Google. Accede con "+expected+".");
+  if(expected&&normalizeEmail(verified.email)!==expected)throw Error("El enlace corresponde a otro correo. Solicita acceso con "+expected+".");
   const current=setSession(received,verified);
   sessionStorage.removeItem(OAUTH_EMAIL_KEY);
   history.replaceState(null,"",window.location.pathname+window.location.search);
@@ -152,6 +169,6 @@
   return dataApi("cad9_course_progress_v1","GET",undefined,
     "?select=user_id,institutional_email,progress,updated_at&order=institutional_email.asc");
  }
- return {URL,DOMAIN,SESSION_KEY,normalizeEmail,validEmail,onChange,init,beginInstitutionalSignIn,consumeOAuthRedirect,verifySession,signOut,
+ return {URL,DOMAIN,SESSION_KEY,normalizeEmail,validEmail,onChange,init,beginInstitutionalSignIn,sendInstitutionalLink,consumeOAuthRedirect,verifySession,signOut,
   get user(){return user},get authenticated(){return Boolean(user)},loadDiagnostic,saveDiagnostic,mergeDiagnosticDraft,loadProgress,saveProgress,isTeacher,loadClassDiagnostics,loadClassProgress};
 });
