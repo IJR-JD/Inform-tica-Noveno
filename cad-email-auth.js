@@ -122,6 +122,11 @@
   const row={user_id:user.id,institutional_email:user.email,answers,submitted_at:submittedAt||null,profile:profile||{},updated_at:new Date().toISOString()};
   return dataApi("cad9_diagnostic_results_v1","POST",row,"?on_conflict=user_id");
  }
+ async function mergeDiagnosticDraft(answers){
+  if(!user)throw Error("Identidad no autenticada.");
+  if(!answers||typeof answers!=="object"||Array.isArray(answers))throw Error("Borrador inválido.");
+  return dataApi("rpc/cad9_merge_diagnostic_draft","POST",{p_answers:answers});
+ }
  async function loadProgress(){
   if(!user)return null;
   const rows=await dataApi("cad9_course_progress_v1","GET",undefined,"?select=progress&user_id=eq."+encodeURIComponent(user.id));
@@ -148,5 +153,5 @@
     "?select=user_id,institutional_email,progress,updated_at&order=institutional_email.asc");
  }
  return {URL,DOMAIN,SESSION_KEY,normalizeEmail,validEmail,onChange,init,beginInstitutionalSignIn,consumeOAuthRedirect,verifySession,signOut,
-  get user(){return user},get authenticated(){return Boolean(user)},loadDiagnostic,saveDiagnostic,loadProgress,saveProgress,isTeacher,loadClassDiagnostics,loadClassProgress};
+  get user(){return user},get authenticated(){return Boolean(user)},loadDiagnostic,saveDiagnostic,mergeDiagnosticDraft,loadProgress,saveProgress,isTeacher,loadClassDiagnostics,loadClassProgress};
 });
