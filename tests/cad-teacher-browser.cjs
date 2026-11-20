@@ -70,6 +70,7 @@ try{
  await page.locator("#teacherRows .teacher-detail-button").click();
  assert.equal(await page.locator("#teacherDomainStats article").count(),6,"All skill categories present");
  assert.equal(await page.locator("#teacherUnitRecords article").count(),26,"All CAD units visible");
+ await page.locator(".teacher-answer-review summary").click();
  await page.locator("#teacherAnswers").locator("p").first().waitFor();
  assert.equal(await page.locator("#teacherAnswers p").count(),24,"All diagnostic answers visible");
  const csvPromise=page.waitForEvent("download");await page.locator("#teacherExportCsv").click();
