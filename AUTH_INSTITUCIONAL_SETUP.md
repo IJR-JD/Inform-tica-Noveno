@@ -34,6 +34,7 @@ La integración del frontend está escrita, pero el **proveedor de Google y las 
 |---|---|---|
 | `auth.users` | OAuth institucional verificado, UUID por usuario | El correo introducido no autoriza el acceso |
 | `cad9_diagnostic_results_v1` | RLS por `auth.uid()` y correo del JWT | Borradores automáticos, validación de 24 respuestas y protección de envíos finalizados |
+| `cad9_merge_diagnostic_draft(jsonb)` | RPC `security invoker`, solo `authenticated` | Combina respuestas por pregunta; evita que un borrador desactualizado borre respuestas de otro equipo |
 | `cad9_course_progress_v1` | RLS por `auth.uid()` y correo del JWT | Contenido acumulativo, revisión, quizzes, evidencias, intentos y revisión incremental |
 | `cad9_merge_course_progress(jsonb)` | RPC `security invoker`, solo `authenticated` | Combina el progreso en una transacción para impedir borrados por estados antiguos |
 | `private.cad9_teacher_allowlist_v1` | Acceso directo revocado a cuentas finales | Autoriza la consulta completa del material para el correo institucional establecido |
