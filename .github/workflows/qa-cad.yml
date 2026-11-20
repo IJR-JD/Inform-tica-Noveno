@@ -9,6 +9,9 @@ on:
       - 'module-zero.js'
       - 'module-zero-ui.js'
       - 'cad-email-auth.js'
+      - 'docente.html'
+      - 'docente.js'
+      - 'docente.css'
       - 'module-zero-visuals.js'
       - 'module-zero-visuals.css'
       - 'module-zero.css'
@@ -33,6 +36,7 @@ jobs:
           node --check cad-curriculum.js
           node --check module-zero.js
           node --check cad-email-auth.js
+          node --check docente.js
           node --check module-zero-ui.js
           node --check module-zero-visuals.js
           node --check tests/cad-progress.test.cjs
@@ -48,4 +52,5 @@ jobs:
         run: |
           python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/cad-server.log 2>&1 &
           node tests/cad-browser.cjs
+          node tests/cad-teacher-browser.cjs
 
