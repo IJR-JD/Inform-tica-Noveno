@@ -26,6 +26,7 @@ const D=window.IJRDiagnostic;
 let store=P.cleanState({},DATA.topics.length);
 let diagnosticComplete=false,teacherAccess=false;
 let syncQueue=Promise.resolve();
+window.waitForCADSync=()=>syncQueue;
 const $=id=>document.getElementById(id);
 function syncStatus(message,kind="info"){
  const status=$("hubSyncStatus");
@@ -218,5 +219,5 @@ $("saveExercise").onclick=saveExercise;
 $("continueNext").onclick=()=>openTheory(active+1);
 $("prevTopic").onclick=()=>openTheory(active-1);
 $("nextTopic").onclick=()=>openTheory(active+1);
-window.refreshCADHome=cards;window.returnCADHome=()=>setView("overview");document.getElementById("hubSignOut").onclick=async()=>{await window.IJRCADAuth.signOut();window.location.replace("./")};cards();initLab();setView("overview");
+window.refreshCADHome=cards;window.returnCADHome=()=>setView("overview");document.getElementById("hubSignOut").onclick=async()=>{await window.waitForCADSync();await window.IJRCADAuth.signOut();window.location.replace("./")};cards();initLab();setView("overview");
 </script></body></html>
