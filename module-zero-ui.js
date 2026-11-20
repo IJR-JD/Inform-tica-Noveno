@@ -4,6 +4,7 @@
  const D=window.IJRDiagnostic,A=window.IJRCADAuth,$=id=>document.getElementById(id);
  const DRAFT_PREFIX="ijr-cad9-draft-auth-v1-";
  let state={answers:{},submitted:false,submittedAt:null},current=0,saving=false,teacherMode=false;
+ let draftTimer=null,draftQueue=Promise.resolve(),draftDirty=false;
  const ident=$("diagnosticIdentity"),nav=$("diagnosticNav"),body=$("diagnosticBody");
  const notice=$("diagnosticNotice"),status=$("diagnosticIdentityStatus");
  function setStatus(message){status.textContent=message}
@@ -11,15 +12,26 @@
  function reportError(err){return err?.message||"No se pudo completar la operación."}
  function hide(el,on){el.classList.toggle("app-hidden",on)}
  function draftKey(){return A.user?DRAFT_PREFIX+A.user.id:null}
- function saveDraft(){
-  const key=draftKey();if(!key)return;
-  try{localStorage.setItem(key,JSON.stringify({answers:D.validAnswers(state.answers)}))}catch{}
+ function queueDraft(){
+  if(!A.authenticated||teacherMode||state.submitted)return draftQueue;
+  const snapshot=D.validAnswers(state.answers);
+  draftQueue=draftQueue.catch(()=>{}).then(()=>A.saveDiagnostic({answers:snapshot,submittedAt:null,profile:{}}));
+  return draftQueue;
  }
- async function persistRemote(){
-  if(!A.authenticated)throw Error("Inicia sesión con tu correo institucional.");
-  const result=D.evaluate(state.answers);
-  await A.saveDiagnostic({answers:D.validAnswers(state.answers),submittedAt:state.submittedAt,profile:state.submitted?D.profile(state.answers):{}});
-  return result;
+ function saveDraft(){
+  const key=draftKey();if(!key||state.submitted||teacherMode)return;
+  try{localStorage.setItem(key,JSON.stringify({answers:D.validAnswers(state.answers)}))}catch{}
+  draftDirty=true;
+  if(draftTimer)clearTimeout(draftTimer);
+  draftTimer=setTimeout(()=>{
+   draftTimer=null;draftDirty=false;
+   queueDraft().catch(error=>{setNotice("Respuestas guardadas en este equipo; sincronización pendiente: "+error.message)});
+  },500);
+ }
+ async function flushDraft(){
+  if(draftTimer){clearTimeout(draftTimer);draftTimer=null}
+  if(draftDirty){draftDirty=false;await queueDraft()}
+  await draftQueue;
  }
  async function hydrate(){
   if(!A.authenticated){state={answers:{},submitted:false,submittedAt:null};teacherMode=false;window.setTeacherAccess?.(false);window.setDiagnosticComplete?.(false);await window.refreshStudentProgress?.();render();return}
@@ -85,7 +97,7 @@
    const label=document.createElement("label");label.className="diagnostic-choice";
    const input=document.createElement("input");input.type="radio";input.name="diagnosticAnswer";input.value=i;input.checked=state.answers[q.id]===i;
    input.onchange=()=>{
-    state.answers[q.id]=i;saveDraft();updateProgress();questionNav();setNotice("Respuesta guardada como borrador. Se sincronizará al finalizar.");
+    state.answers[q.id]=i;saveDraft();updateProgress();questionNav();setNotice("Respuesta guardada. Se sincronizará con Supabase automáticamente.");
    };
    const copy=document.createElement("span");copy.textContent=option;label.append(input,copy);answers.append(label);
   });body.append(answers);
@@ -155,6 +167,7 @@
   saving=true;$("diagnosticSubmit").disabled=true;
   const date=new Date().toISOString();
   try{
+   await flushDraft();
    await A.saveDiagnostic({answers:D.validAnswers(state.answers),submittedAt:date,profile:D.profile(state.answers)});
    state.submitted=true;state.submittedAt=date;
    window.setDiagnosticComplete?.(true);render();
