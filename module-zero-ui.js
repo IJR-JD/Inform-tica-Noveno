@@ -22,7 +22,7 @@
   return result;
  }
  async function hydrate(){
-  if(!A.authenticated){state={answers:{},submitted:false,submittedAt:null};window.setDiagnosticComplete?.(false);await window.refreshStudentProgress?.();render();return}
+  if(!A.authenticated){state={answers:{},submitted:false,submittedAt:null};window.setTeacherAccess?.(false);window.setDiagnosticComplete?.(false);await window.refreshStudentProgress?.();render();return}
   state={answers:{},submitted:false,submittedAt:null};
   try{
    const row=await A.loadDiagnostic();
@@ -38,6 +38,8 @@
    setNotice("No se pudo cargar el perfil desde Supabase. Se requiere conexión para finalizar: "+reportError(err));
    try{state.answers=D.validAnswers(JSON.parse(localStorage.getItem(draftKey())||"{}").answers)}catch{}
   }
+  let teacher=false;try{teacher=await A.isTeacher()}catch(error){console.warn("No se pudo comprobar el acceso docente:",error.message)}
+  window.setTeacherAccess?.(teacher);
   window.setDiagnosticComplete?.(state.submitted);
   await window.refreshStudentProgress?.();
   current=0;render();
