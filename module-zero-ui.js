@@ -64,17 +64,18 @@
   current=0;render();
  }
  function presentAuth(){
+  const guest=Boolean(window.IJRGuest&&!A.authenticated);
   const logged=A.authenticated;
-  hide(ident,logged);hide($("diagnosticActiveStudent"),!logged);
-  $("diagnosticStudentCode").textContent=logged?"Correo verificado: "+A.user.email:"";
-  hide(nav,!logged||state.submitted||teacherMode);hide(body,!logged);
-  for(const id of ["diagnosticPrev","diagnosticNext","diagnosticSubmit"])hide($(id),!logged||state.submitted||teacherMode);
+  hide(ident,logged||guest);hide($("diagnosticActiveStudent"),!logged&&!guest);
+  $("diagnosticStudentCode").textContent=logged?"Correo verificado: "+A.user.email:guest?"Consulta sin verificar: "+window.IJRGuest.email:"";
+  hide(nav,!logged||state.submitted||teacherMode||guest);hide(body,!logged&&!guest);
+  for(const id of ["diagnosticPrev","diagnosticNext","diagnosticSubmit"])hide($(id),!logged||state.submitted||teacherMode||guest);
   hide($("diagnosticGoCAD"),!logged||(!state.submitted&&!teacherMode));
   hide($("diagnosticExport"),!logged||!state.submitted||teacherMode);
   if(!logged){$("diagnosticCounter").textContent="0 / "+D.questions.length;$("diagnosticBar").style.width="0%"}
-  $("diagnosticCardStatus").textContent=teacherMode?"CONTENIDO COMPLETO · ACCESO LIBRE":logged?(state.submitted?"PERFIL COMPLETADO":"EVALUACIÓN PENDIENTE"):"CORREO INSTITUCIONAL REQUERIDO";
-  $("openDiagnostic").textContent=teacherMode?"Revisar Módulo 0 y soluciones →":logged&&state.submitted?"Consultar mi perfil":"Iniciar diagnóstico →";
-  return logged;
+  $("diagnosticCardStatus").textContent=guest?"CONSULTA SIN VERIFICAR":teacherMode?"CONTENIDO COMPLETO · ACCESO LIBRE":logged?(state.submitted?"PERFIL COMPLETADO":"EVALUACIÓN PENDIENTE"):"CORREO INSTITUCIONAL REQUERIDO";
+  $("openDiagnostic").textContent=guest?"Explorar preguntas sin registrar →":teacherMode?"Revisar Módulo 0 y soluciones →":logged&&state.submitted?"Consultar mi perfil":"Iniciar diagnóstico →";
+  return logged||guest;
  }
  function view(){
   document.querySelectorAll("#overview,#theory,#workshop,#lab,#diagnostic").forEach(el=>hide(el,el.id!=="diagnostic"));
@@ -166,7 +167,26 @@
   $("diagnosticBar").style.width="100%";
   setNotice("Vista libre de consulta. No se modifica el avance estudiantil.");
  }
- function render(){if(!presentAuth())return;if(teacherMode)teacherPreview();else if(state.submitted)summary();else question()}
+ function guestPreview(){
+  body.replaceChildren();
+  const heading=document.createElement("h2");heading.textContent="Preguntas del Módulo 0 · Consulta libre";
+  const note=document.createElement("p");note.textContent="Puedes explorar las 24 preguntas y sus alternativas. No se muestran las soluciones ni se envían respuestas a Supabase hasta confirmar tu identidad.";
+  body.append(heading,note);
+  D.questions.forEach(q=>{
+   const section=document.createElement("details");section.className="diagnostic-review";
+   const summary=document.createElement("summary");summary.textContent=String(q.id).padStart(2,"0")+" · "+q.category+" · "+q.prompt;
+   section.append(summary,window.IJRVisuals.build(q.id));
+   q.options.forEach((option,i)=>{const line=document.createElement("p");line.textContent=String.fromCharCode(65+i)+". "+option;section.append(line)});
+   body.append(section);
+  });
+  const action=document.createElement("a");
+  action.href="./?verify=1";action.className="button button-dark";
+  action.textContent="Verificar correo para registrar mis resultados";
+  body.append(action);
+  $("diagnosticCounter").textContent="24 preguntas · Consulta";
+  $("diagnosticBar").style.width="0%";
+ }
+ function render(){if(!presentAuth())return;if(window.IJRGuest&&!A.authenticated)guestPreview();else if(teacherMode)teacherPreview();else if(state.submitted)summary();else question()}
  async function finish(){
   if(!A.authenticated||saving)return;
   const e=D.evaluate(state.answers);if(e.answered!==e.total){setNotice("Responde las "+e.total+" preguntas antes de finalizar.");return}
@@ -199,6 +219,7 @@
   const blob=new Blob([JSON.stringify(record,null,2)],{type:"application/json"}),url=URL.createObjectURL(blob);
   const link=document.createElement("a");link.href=url;link.download="diagnostico_9_perfil.json";document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
  };
+ window.addEventListener("ijr-guest-ready",()=>{render()});
  A.init().then(hydrate).catch(err=>{setStatus("No se pudo iniciar la autenticación: "+reportError(err));render()});
  render();
 })();
