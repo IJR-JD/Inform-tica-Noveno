@@ -47,11 +47,9 @@ await page.route("https://rlfxnjbqxbozjdzkbwlz.supabase.co/**",async route=>{
 });
 const errors=[];page.on("pageerror",err=>errors.push(err.message));
 async function login(email){
+ selectedEmail=email;
  await page.locator("#loginEmail").fill(email);
  await page.locator("#loginSend").click();
- await page.locator("#loginOtpForm").waitFor({state:"visible"});
- await page.locator("#loginOtp").fill("123456");
- await page.locator("#loginVerify").click();
 }
 
 try{
