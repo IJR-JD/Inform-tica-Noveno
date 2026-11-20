@@ -38,12 +38,12 @@
   if(typeof window==="undefined"||!window.location)throw Error("La autenticación institucional requiere navegador.");
   const allowed=new Set(["hub.html","docente.html"]);
   const dest=allowed.has(returnTo)?returnTo:"hub.html";
-  const callback=new URL("./",window.location.href);
+  const callback=new window.URL("./",window.location.href);
   callback.searchParams.set("next",dest);
   // The student controls the Google account, not the form's text.
   // No database identity is trusted until Supabase validates an OAuth session.
   sessionStorage.setItem(OAUTH_EMAIL_KEY,value);
-  const url=new URL(URL+"/auth/v1/authorize");
+  const url=new window.URL(URL+"/auth/v1/authorize");
   url.searchParams.set("provider","google");
   url.searchParams.set("redirect_to",callback.href);
   window.location.assign(url.href);
