@@ -4,7 +4,7 @@ const assert=require("node:assert/strict");
 (async()=>{
  const browser=await chromium.launch({headless:true}),page=await browser.newPage({viewport:{width:1365,height:900}});
  const users=new Map(),diagnostics=new Map(),course=new Map();
- let selectedEmail="test1@ijr.edu.co",otpCalls=0;
+ let selectedEmail="test1@ijr.edu.co",emailLinkRequests=0;
  const person=email=>{if(!users.has(email))users.set(email,{id:email.startsWith("test1")?"11111111-1111-4111-8111-111111111111":"22222222-2222-4222-8222-222222222222",email});return users.get(email)};
  const asUser=req=>{const token=(req.headers().authorization||"").replace(/^Bearer /,"");return token.startsWith("demo-token-")?person(token.slice(11)):null};
  const respond=(route,body,status=200)=>route.fulfill({status,contentType:"application/json",headers:{"access-control-allow-origin":"*"},body:JSON.stringify(body)});
@@ -16,7 +16,7 @@ const assert=require("node:assert/strict");
    const fragment="#access_token="+encodeURIComponent("demo-token-"+selectedEmail)+"&refresh_token="+encodeURIComponent("demo-refresh-"+selectedEmail)+"&expires_in=3600&token_type=bearer";
    return route.fulfill({status:302,headers:{"location":callback+fragment},body:""});
   }
-  if(path==="/auth/v1/otp"){otpCalls++;return respond(route,{message:"Legacy OTP disabled"},410)}
+  if(path==="/auth/v1/otp"){emailLinkRequests++;selectedEmail=data.email;return respond(route,{})}
   if(path==="/auth/v1/verify"){
    const u=person(data.email);
    if(data.token!=="123456")return respond(route,{message:"Invalid OTP"},403);
@@ -61,7 +61,11 @@ const assert=require("node:assert/strict");
  selectedEmail="test1@ijr.edu.co";
  await page.locator("#loginEmail").fill(selectedEmail);
  await page.locator("#loginSend").click();
- await page.waitForURL(/\/hub\.html$/,{timeout:9000}).catch(async()=>{throw Error("OAuth redirect did not complete. URL="+page.url()+" message="+(await page.locator("#loginMessage").textContent().catch(()=>"missing"))+" errors="+errors.join(";"))});
+ await page.locator("#loginLinkSent").waitFor({state:"visible"});
+ assert.equal(emailLinkRequests,1);
+ const link1="http://127.0.0.1:8765/?next=hub.html#access_token="+encodeURIComponent("demo-token-"+selectedEmail)+"&refresh_token="+encodeURIComponent("demo-refresh-"+selectedEmail)+"&expires_in=3600";
+ await page.goto(link1,{waitUntil:"load"});
+ await page.waitForURL(/\/hub\.html$/);
  await page.locator("#topicGrid .hub-topic-card").first().waitFor();
  await page.waitForFunction(()=>document.documentElement.getAttribute("data-auth-ready")==="true");
  assert.equal(await page.locator("#topicGrid .hub-topic-card").count(),26);
@@ -117,14 +121,17 @@ const assert=require("node:assert/strict");
  selectedEmail="test2@ijr.edu.co";
  await page.locator("#loginEmail").fill(selectedEmail);
  await page.locator("#loginSend").click();
+ await page.locator("#loginLinkSent").waitFor({state:"visible"});
+ const link2="http://127.0.0.1:8765/?next=hub.html#access_token="+encodeURIComponent("demo-token-"+selectedEmail)+"&refresh_token="+encodeURIComponent("demo-refresh-"+selectedEmail)+"&expires_in=3600";
+ await page.goto(link2,{waitUntil:"load"});
  await page.waitForURL(/\/hub\.html$/);
  await page.locator("#topicGrid .hub-topic-card").first().waitFor();
  await page.locator("#openDiagnostic").click();
  await page.waitForFunction(()=>document.getElementById("diagnosticStudentCode").textContent.includes("test2@ijr.edu.co"));
  assert.equal(await page.locator("#topicGrid .hub-topic-card").first().locator(".theory-action").isDisabled(),true,"Different user never inherits CAD");
  assert.equal(await page.locator("#diagnosticSubmit").isDisabled(),true,"Different user never inherits diagnostic");
- assert.equal(otpCalls,0,"No code-based authentication requests");
+ assert.equal(emailLinkRequests,2,"One email link requested for each student");
  assert.equal(errors.length,0,"JavaScript browser exceptions: "+errors.join("; "));
- console.log("PASS: code-free institutional OAuth, email domain enforcement, atomic progress merge, 24 diagnostic visuals, 26 CAD lessons, student isolation, reload and mobile.");
+ console.log("PASS: code-free institutional magic links, email domain enforcement, atomic progress merge, 24 diagnostic visuals, 26 CAD lessons, student isolation, reload and mobile.");
  await browser.close();
 })().catch(e=>{console.error(e);process.exit(1)});
