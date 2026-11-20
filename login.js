@@ -20,15 +20,30 @@ async function boot(){
  }catch(error){status(error.message||"No fue posible iniciar sesión. Intenta nuevamente.","error")}
  finally{busy(false)}
 }
-emailForm.addEventListener("submit",event=>{
+emailForm.addEventListener("submit",async event=>{
  event.preventDefault();
  const email=A.normalizeEmail($("loginEmail").value);
  if(!A.validEmail(email)){
   status("Solo se permite el correo institucional @"+A.DOMAIN+".","error");return;
  }
- busy(true);status("Redirigiendo a tu cuenta institucional…");
- try{A.beginInstitutionalSignIn(email,destination())}
- catch(error){busy(false);status(error.message||"No se pudo abrir el inicio de sesión institucional.","error")}
+ busy(true);status("Solicitando enlace de acceso al correo institucional…");
+ try{
+  await A.sendInstitutionalLink(email,destination());
+  status("Enlace solicitado para "+email+". Abre tu correo institucional y pulsa el enlace para ingresar. No necesitas introducir códigos.","success");
+  emailForm.hidden=true;
+  const confirmation=$("loginLinkSent");
+  if(confirmation){
+   confirmation.hidden=false;
+   $("loginLinkEmail").textContent=email;
+  }
+ }catch(error){
+  status(error.status===429?"Se alcanzó el límite temporal de envíos. Intenta más tarde.":error.message||"No se pudo enviar el enlace de acceso.","error");
+ }finally{busy(false)}
+});
+const change=$("loginChangeEmail");
+if(change)change.addEventListener("click",()=>{
+ $("loginLinkSent").hidden=true;emailForm.hidden=false;
+ $("loginEmail").focus();status("");
 });
 boot();
 })();
