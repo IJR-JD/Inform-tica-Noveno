@@ -3,7 +3,7 @@
  "use strict";
  const D=window.IJRDiagnostic,A=window.IJRCADAuth,$=id=>document.getElementById(id);
  const DRAFT_PREFIX="ijr-cad9-draft-auth-v1-";
- let state={answers:{},submitted:false,submittedAt:null},current=0,pendingEmail="",saving=false,teacherMode=false;
+ let state={answers:{},submitted:false,submittedAt:null},current=0,saving=false,teacherMode=false;
  const ident=$("diagnosticIdentity"),nav=$("diagnosticNav"),body=$("diagnosticBody");
  const notice=$("diagnosticNotice"),status=$("diagnosticIdentityStatus");
  function setStatus(message){status.textContent=message}
@@ -149,21 +149,6 @@
   setNotice("Vista libre de consulta. No se modifica el avance estudiantil.");
  }
  function render(){if(!presentAuth())return;if(teacherMode)teacherPreview();else if(state.submitted)summary();else question()}
- async function send(){
-  const email=A.normalizeEmail($("diagnosticEmail").value);
-  if(!A.validEmail(email)){setStatus("Utiliza un correo @"+A.DOMAIN+".");return}
-  $("diagnosticSend").disabled=true;setStatus("Solicitando verificación…");
-  try{pendingEmail=await A.requestOtp(email);hide($("diagnosticOtpPanel"),false);setStatus("Revisa tu correo institucional. Introduce el código temporal recibido; si llegó un enlace, puede ser necesario activar el formato OTP en Supabase Auth.");$("diagnosticOtp").focus()}
-  catch(e){setStatus(reportError(e))}
-  finally{$("diagnosticSend").disabled=false}
- }
- async function verify(){
-  if(!pendingEmail){setStatus("Solicita primero un código al correo institucional.");return}
-  $("diagnosticVerify").disabled=true;setStatus("Verificando correo…");
-  try{await A.verifyOtp(pendingEmail,$("diagnosticOtp").value);await hydrate();setStatus("Correo institucional verificado.");}
-  catch(e){setStatus(reportError(e))}
-  finally{$("diagnosticVerify").disabled=false}
- }
  async function finish(){
   if(!A.authenticated||saving)return;
   const e=D.evaluate(state.answers);if(e.answered!==e.total){setNotice("Responde las "+e.total+" preguntas antes de finalizar.");return}
@@ -178,10 +163,6 @@
  }
  $("openDiagnostic").onclick=view;
  $("fromDiagnostic").onclick=()=>window.returnCADHome?.();
- $("diagnosticSend").onclick=send;
- $("diagnosticVerify").onclick=verify;
- $("diagnosticEmail").onkeydown=e=>{if(e.key==="Enter")send()};
- $("diagnosticOtp").onkeydown=e=>{if(e.key==="Enter")verify()};
  $("diagnosticSwitch").onclick=async()=>{await A.signOut();location.reload()};
  $("diagnosticPrev").onclick=()=>{if(current>0){current--;render()}};
  $("diagnosticNext").onclick=()=>{
