@@ -5,6 +5,7 @@ const D=require("../module-zero.js");
 const browser=await chromium.launch({headless:true});
 const page=await browser.newPage({viewport:{width:1290,height:850},acceptDownloads:true});
 const teacher="juandiego.perez@ijr.edu.co",student="alumno9@ijr.edu.co";
+let selectedEmail=student;
 const users=new Map([
  [teacher,{id:"eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",email:teacher}],
  [student,{id:"11111111-1111-4111-8111-111111111111",email:student}]
@@ -27,7 +28,8 @@ const userFor=request=>{
 };
 await page.route("https://rlfxnjbqxbozjdzkbwlz.supabase.co/**",async route=>{
  const req=route.request(),url=new URL(req.url()),path=url.pathname,body=req.method()==="POST"?JSON.parse(req.postData()||"{}"):{};
- if(path==="/auth/v1/otp")return reply(route,{});
+ if(path==="/auth/v1/authorize"){const destination=url.searchParams.get("redirect_to");return route.fulfill({status:302,headers:{location:destination+"#access_token="+encodeURIComponent("fake-"+selectedEmail)+"&refresh_token="+encodeURIComponent("fake-refresh-"+selectedEmail)+"&expires_in=3600"},body:""})}
+ if(path==="/auth/v1/otp")return reply(route,{},410);
  if(path==="/auth/v1/verify"){
   const u=users.get(body.email);
   if(!u||body.token!=="123456")return reply(route,{message:"Código incorrecto"},403);
