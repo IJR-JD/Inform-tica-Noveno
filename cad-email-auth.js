@@ -11,6 +11,8 @@
  const PUBLISHABLE_KEY="sb_publishable_rmVOQ3Orx49KpW_4uMqYew_c2HpcA87";
  const DOMAIN="ijr.edu.co";
  const SESSION_KEY="ijr-cad9-auth-session-v1";
+ const OAUTH_EMAIL_KEY="ijr-cad9-expected-email";
+ let initPromise=null;
  let session=null,user=null;
  const listeners=new Set();
  function normalizeEmail(value){return String(value||"").trim().toLowerCase()}
@@ -30,18 +32,42 @@
   if(!response.ok){const e=Error(payload.msg||payload.error_description||payload.message||payload.error||"Error de autenticación o conexión");e.status=response.status;throw e}
   return payload;
  }
- async function requestOtp(email){
-  const value=normalizeEmail(email);if(!validEmail(value))throw Error("Introduce tu correo institucional @"+DOMAIN+".");
-  await request("/auth/v1/otp",{method:"POST",body:JSON.stringify({email:value,create_user:true})});
-  return value;
+ function beginInstitutionalSignIn(email,returnTo){
+  const value=normalizeEmail(email);
+  if(!validEmail(value))throw Error("Introduce un correo institucional válido @"+DOMAIN+".");
+  if(typeof window==="undefined"||!window.location)throw Error("La autenticación institucional requiere navegador.");
+  const allowed=new Set(["hub.html","docente.html"]);
+  const dest=allowed.has(returnTo)?returnTo:"hub.html";
+  const callback=new URL("./",window.location.href);
+  callback.searchParams.set("next",dest);
+  // The student controls the Google account, not the form's text.
+  // No database identity is trusted until Supabase validates an OAuth session.
+  sessionStorage.setItem(OAUTH_EMAIL_KEY,value);
+  const url=new URL(URL+"/auth/v1/authorize");
+  url.searchParams.set("provider","google");
+  url.searchParams.set("redirect_to",callback.href);
+  window.location.assign(url.href);
  }
- async function verifyOtp(email,token){
-  const value=normalizeEmail(email),pin=String(token||"").trim();
-  if(!validEmail(value)||!/^[0-9]{6,8}$/.test(pin))throw Error("Verifica el correo y escribe el código numérico recibido.");
-  const payload=await request("/auth/v1/verify",{method:"POST",body:JSON.stringify({email:value,token:pin,type:"email"})});
-  return setSession(payload,payload.user);
+ async function consumeOAuthRedirect(){
+  if(typeof window==="undefined")return null;
+  const h=new URLSearchParams(window.location.hash.replace(/^#/,""));
+  if(h.has("error")||h.has("error_description")){
+   const message=h.get("error_description")||h.get("error")||"Inicio de sesión cancelado";
+   history.replaceState(null,"",window.location.pathname+window.location.search);
+   throw Error(message);
+  }
+  if(!h.has("access_token"))return null;
+  const received={access_token:h.get("access_token"),refresh_token:h.get("refresh_token"),expires_in:Number(h.get("expires_in")||3600)};
+  const verified=await request("/auth/v1/user",{headers:{Authorization:"Bearer "+received.access_token}});
+  if(!validEmail(verified.email))throw Error("La cuenta Google no pertenece al dominio institucional.");
+  const expected=sessionStorage.getItem(OAUTH_EMAIL_KEY);
+  if(expected&&normalizeEmail(verified.email)!==expected)throw Error("Seleccionaste otra cuenta Google. Accede con "+expected+".");
+  const current=setSession(received,verified);
+  sessionStorage.removeItem(OAUTH_EMAIL_KEY);
+  history.replaceState(null,"",window.location.pathname+window.location.search);
+  return current;
  }
- async function refresh(){
+  async function refresh(){
   if(!session?.refresh_token)throw Error("No hay sesión para renovar.");
   const data=await request("/auth/v1/token?grant_type=refresh_token",{method:"POST",body:JSON.stringify({refresh_token:session.refresh_token})});
   return setSession(data,data.user);
@@ -59,10 +85,21 @@
    throw err;
   }
  }
- async function init(){
+ async function initInternal(){
+  try{
+   const oauth=await consumeOAuthRedirect();
+   if(oauth)return oauth;
+  }catch(error){
+   session=null;user=null;writeLocal(null);notify();
+   throw error;
+  }
   session=readLocal();
   if(!session){user=null;notify();return null}
   try{return await verifySession()}catch{session=null;user=null;writeLocal(null);notify();return null}
+ }
+ function init(){
+  if(!initPromise)initPromise=initInternal().finally(()=>{initPromise=null});
+  return initPromise;
  }
  function onChange(callback){listeners.add(callback);return ()=>listeners.delete(callback)}
  async function signOut(){
@@ -110,6 +147,6 @@
   return dataApi("cad9_course_progress_v1","GET",undefined,
     "?select=user_id,institutional_email,progress,updated_at&order=institutional_email.asc");
  }
- return {URL,DOMAIN,SESSION_KEY,normalizeEmail,validEmail,onChange,init,requestOtp,verifyOtp,verifySession,signOut,
+ return {URL,DOMAIN,SESSION_KEY,normalizeEmail,validEmail,onChange,init,beginInstitutionalSignIn,consumeOAuthRedirect,verifySession,signOut,
   get user(){return user},get authenticated(){return Boolean(user)},loadDiagnostic,saveDiagnostic,loadProgress,saveProgress,isTeacher,loadClassDiagnostics,loadClassProgress};
 });
