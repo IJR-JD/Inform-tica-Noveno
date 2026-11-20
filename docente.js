@@ -87,7 +87,7 @@ async function authorize(){
  try{
   isReady=await A.isTeacher();
   show("teacherDenied",!isReady);show("teacherDashboard",isReady);
-  if(isReady){$("teacherAccount").textContent="Docente: "+A.user.email;await load()}
+  if(isReady){$("teacherAccount").textContent="Docente: "+A.user.email;library("diagnostic");await load()}
  }catch(e){show("teacherDenied",true);$("teacherDeniedReason").textContent="No se pudo verificar el rol: "+e.message}
 }
 async function send(){
@@ -104,7 +104,47 @@ async function verify(){
  catch(e){$("teacherAuthStatus").textContent=e.message}
  finally{$("teacherVerify").disabled=false}
 }
-$("teacherSend").onclick=send;$("teacherVerify").onclick=verify;
+function library(mode){
+ if(!isReady)return;
+ const output=$("teacherLibraryList");output.replaceChildren();
+ const isDiagnostic=mode==="diagnostic";
+ $("teacherShowDiagnostic").className="button "+(isDiagnostic?"button-dark":"button-light");
+ $("teacherShowLessons").className="button "+(!isDiagnostic?"button-dark":"button-light");
+ if(isDiagnostic){
+  for(const q of D.questions){
+   const item=document.createElement("details"),heading=document.createElement("summary");
+   heading.textContent=String(q.id).padStart(2,"0")+" · "+q.category+" · "+q.prompt;
+   const choices=document.createElement("p");choices.textContent="Opciones: "+q.options.join(" | ");
+   const answer=document.createElement("p");answer.textContent="Respuesta correcta: "+q.options[q.correct];
+   const why=document.createElement("p");why.textContent="Fundamentación: "+q.explanation;
+   item.append(heading,choices,answer,why);output.append(item);
+  }
+ }else{
+  const catalog=window.CAD_CURRICULUM;
+  if(!catalog)return;
+  catalog.topics.forEach((t,i)=>{
+   const guide=catalog.guides[i],item=document.createElement("details"),heading=document.createElement("summary");
+   heading.textContent="Unidad "+String(i+1).padStart(2,"0")+" · "+t[0];
+   item.append(heading);
+   for(const [label,content] of [["Objetivo",t[1]],["Fundamento",t[2]],["Práctica",t[3]],["Ejemplo",guide?.example],["Consejo",guide?.pitfall]]){
+    if(!content)continue;
+    const section=document.createElement("p");section.textContent=label+": "+content;item.append(section);
+   }
+   if(Array.isArray(guide?.steps)){
+    const list=document.createElement("ol");
+    guide.steps.forEach(s=>{const li=document.createElement("li");li.textContent=s;list.append(li)});
+    item.append(list);
+   }
+   if(Array.isArray(t[4])){
+    const quiz=document.createElement("p");
+    quiz.textContent="Comprobación: "+t[4][0]+" · Respuesta correcta: "+t[4][1];
+    item.append(quiz);
+   }
+   output.append(item);
+  });
+ }
+}
+$("teacherSend").onclick=send;$("teacherShowDiagnostic").onclick=()=>library("diagnostic");$("teacherShowLessons").onclick=()=>library("lessons");$("teacherVerify").onclick=verify;
 $("teacherEmail").onkeydown=e=>{if(e.key==="Enter")send()};
 $("teacherOtp").onkeydown=e=>{if(e.key==="Enter")verify()};
 function downloadFile(filename,mime,content){
