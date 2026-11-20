@@ -21,32 +21,25 @@
  <section class="login-intro" aria-labelledby="introTitle">
   <p class="login-kicker">01 / IDENTIFICACIÓN</p>
   <h1 id="introTitle">Aprender comienza con tu identidad institucional.</h1>
-  <p class="login-lead">Un único ingreso para acceder a tu diagnóstico, las prácticas de modelado 3D y tu progreso en el Learning Hub.</p>
+  <p class="login-lead">Usa tu correo institucional para acceder a tu diagnóstico, las prácticas de modelado 3D y tu progreso, sincronizado con Supabase.</p>
   <div class="login-steps" aria-label="Proceso de acceso">
    <div><span>01</span><p>Escribe tu correo institucional.</p></div>
-   <div><span>02</span><p>Verifica el código recibido en el correo.</p></div>
+   <div><span>02</span><p>Selecciona tu cuenta institucional de Google.</p></div>
    <div><span>03</span><p>Continúa al entorno de aprendizaje.</p></div>
   </div>
  </section>
  <section class="login-card" aria-labelledby="formTitle">
   <p class="login-kicker">ACCESO SEGURO · SUPABASE</p>
   <h2 id="formTitle">Iniciar sesión</h2>
-  <p id="loginHelp">Usa tu correo institucional del Instituto Jorge Robledo. No necesitas una contraseña adicional.</p>
+  <p id="loginHelp">Escribe tu correo institucional y continúa con tu cuenta Google del colegio. No enviaremos códigos de acceso.</p>
   <form id="loginEmailForm" autocomplete="on">
    <label for="loginEmail">Correo institucional</label>
    <input id="loginEmail" type="email" name="email" autocomplete="email" inputmode="email" maxlength="254" placeholder="estudiante@ijr.edu.co" required>
-   <button id="loginSend" class="login-primary" type="submit">Enviar código de acceso <span aria-hidden="true">→</span></button>
-  </form>
-  <form id="loginOtpForm" class="login-otp" autocomplete="on" hidden>
-   <p id="loginOtpDescription">Enviamos un código temporal a tu correo.</p>
-   <label for="loginOtp">Código recibido</label>
-   <input id="loginOtp" type="text" name="one-time-code" inputmode="numeric" autocomplete="one-time-code" maxlength="8" pattern="[0-9]{6,8}" placeholder="••••••" required>
-   <button id="loginVerify" class="login-primary" type="submit">Verificar y entrar <span aria-hidden="true">→</span></button>
-   <button id="loginChange" class="login-secondary" type="button">Usar otro correo</button>
+   <button id="loginSend" class="login-primary" type="submit">Continuar con correo institucional <span aria-hidden="true">→</span></button>
   </form>
   <div id="loginLoading" class="login-loading" role="status" hidden>Validando tu sesión institucional…</div>
   <p id="loginMessage" class="login-message" role="status" aria-live="polite"></p>
-  <div class="login-privacy"><span aria-hidden="true">◈</span><p>Tu identidad se confirma con Supabase Auth. Tus registros se vinculan a la cuenta verificada, no a un código escrito manualmente.</p></div>
+  <div class="login-privacy"><span aria-hidden="true">◈</span><p>Tu correo se confirma con Google institucional y Supabase Auth. Tus registros se vinculan a la cuenta verificada, no a un código escrito manualmente.</p></div>
  </section>
 </main>
 <footer class="login-footer"><span>INSTITUTO JORGE ROBLEDO · INFORMÁTICA 9.º</span><span>Diagnóstico · Lógica · Geometría · Diseño CAD</span></footer>
