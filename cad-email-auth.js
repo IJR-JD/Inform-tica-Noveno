@@ -129,8 +129,8 @@
  }
  async function saveProgress(progress){
   if(!user)throw Error("Identidad no autenticada.");
-  const row={user_id:user.id,institutional_email:user.email,progress,updated_at:new Date().toISOString()};
-  return dataApi("cad9_course_progress_v1","POST",row,"?on_conflict=user_id");
+  if(!progress||typeof progress!=="object"||Array.isArray(progress))throw Error("Estado de avance inválido.");
+  return dataApi("rpc/cad9_merge_course_progress","POST",{p_progress:progress});
  }
  async function isTeacher(){
   if(!user)return false;
