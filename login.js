@@ -45,5 +45,11 @@ if(change)change.addEventListener("click",()=>{
  $("loginLinkSent").hidden=true;emailForm.hidden=false;
  $("loginEmail").focus();status("");
 });
+// Opening a magic link in the same browser tab may change only the URL fragment.
+// Recover the verified session even when the document is not reloaded.
+window.addEventListener("hashchange",()=>{
+ if(new URLSearchParams(location.hash.slice(1)).has("access_token")||
+    new URLSearchParams(location.hash.slice(1)).has("error"))boot();
+});
 boot();
 })();
