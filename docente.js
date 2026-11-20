@@ -107,7 +107,36 @@ async function verify(){
 $("teacherSend").onclick=send;$("teacherVerify").onclick=verify;
 $("teacherEmail").onkeydown=e=>{if(e.key==="Enter")send()};
 $("teacherOtp").onkeydown=e=>{if(e.key==="Enter")verify()};
-$("teacherRefresh").onclick=load;$("teacherSearch").oninput=render;
+function downloadFile(filename,mime,content){
+ if(!isReady)return;
+ const blob=new Blob([content],{type:mime}),url=URL.createObjectURL(blob),a=document.createElement("a");
+ a.href=url;a.download=filename;document.body.append(a);a.click();a.remove();
+ setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+function quoteCsv(value){
+ const safe=String(value??"").replace(/[\r\n]+/g," ").replace(/^[=+\-@]/,"'$("teacherRefresh").onclick=load;$("teacherSearch").oninput=render;");
+ return '"'+safe.replace(/"/g,'""')+'"';
+}
+function exportSummary(){
+ if(!isReady)return;
+ const header=["Correo institucional","Puntaje","Preguntas","Porcentaje","Nivel orientativo","Unidades CAD"];
+ const lines=[header,...records.map(item=>{
+  const p=currentProfile(item);
+  return [item.email,p?.score??"",p?.total??"",p?.percent??"",p?.level||"Pendiente",count(item.progress)];
+ })].map(row=>row.map(quoteCsv).join(",")).join("\r\n");
+ downloadFile("informatica9_resumen_docente.csv","text/csv;charset=utf-8","\uFEFF"+lines);
+}
+function exportRecords(){
+ if(!isReady)return;
+ const data=records.map(item=>({
+  institutionalEmail:item.email,diagnosticSubmittedAt:item.diagnostic?.submitted_at||null,
+  profile:currentProfile(item),diagnosticAnswers:item.diagnostic?.answers||null,
+  cadProgress:item.progress||null
+ }));
+ downloadFile("informatica9_registros_docente.json","application/json",
+  JSON.stringify({exportedAt:new Date().toISOString(),records:data},null,2));
+}
+$("teacherRefresh").onclick=load;$("teacherSearch").oninput=render;$("teacherExportCsv").onclick=exportSummary;$("teacherExportJson").onclick=exportRecords;
 $("teacherCloseDetail").onclick=()=>show("teacherDetail",false);
 $("teacherSignOut").onclick=async()=>{await A.signOut();records=[];await authorize()};
 A.init().then(authorize).catch(e=>{$("teacherAuthStatus").textContent=e.message});
