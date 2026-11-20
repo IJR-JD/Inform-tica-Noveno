@@ -28,7 +28,7 @@ emailForm.addEventListener("submit",async event=>{
  }
  // Instant educational browsing is deliberately not an authenticated Supabase session.
  // No student's records or teacher privileges are available from a typed address.
- if(destination()==="hub.html"){
+ if(destination()==="hub.html"&&new URLSearchParams(location.search).get("verify")!=="1"){
   sessionStorage.setItem("ijr-cad9-guest-v1",JSON.stringify({email,createdAt:Date.now()}));
   status("Abriendo los contenidos en modo consulta. Para guardar tu progreso deberás verificar tu correo.","success");
   redirect();return;
@@ -47,6 +47,18 @@ emailForm.addEventListener("submit",async event=>{
   status(error.status===429?"Se alcanzó el límite temporal de envíos. Intenta más tarde.":error.message||"No se pudo enviar el enlace de acceso.","error");
  }finally{busy(false)}
 });
+const verifyLink=$("loginVerifyLink");
+if(verifyLink)verifyLink.addEventListener("click",event=>{
+ event.preventDefault();
+ const target=new URL("./",location.href);
+ target.searchParams.set("verify","1");
+ location.assign(target.href);
+});
+if(new URLSearchParams(location.search).get("verify")==="1"){
+ $("loginSend").textContent="Enviar enlace de verificación";
+ const helper=$("loginHelp");
+ if(helper)helper.textContent="Verifica la propiedad de tu correo mediante un enlace seguro para guardar tus avances en Supabase. No necesitas introducir códigos.";
+}
 const change=$("loginChangeEmail");
 if(change)change.addEventListener("click",()=>{
  $("loginLinkSent").hidden=true;emailForm.hidden=false;
