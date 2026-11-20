@@ -25,7 +25,9 @@ const P=window.CADProgress;
 const D=window.IJRDiagnostic;
 let store=P.cleanState({},DATA.topics.length);
 let diagnosticComplete=false,teacherAccess=false;
-const guestAccess=Boolean(window.IJRGuest&&!window.IJRCADAuth.authenticated);
+let guestAccess=false;
+window.setGuestAccess=value=>{guestAccess=Boolean(value);$("guestBanner").classList.toggle("app-hidden",!guestAccess);if(guestAccess)syncStatus("Consulta sin verificar · Sin guardado en Supabase","error");cards()};
+window.addEventListener("ijr-guest-ready",()=>window.setGuestAccess(true));
 let syncQueue=Promise.resolve();
 window.waitForCADSync=()=>syncQueue;
 const $=id=>document.getElementById(id);
@@ -230,7 +232,7 @@ $("continueNext").onclick=()=>openTheory(active+1);
 $("prevTopic").onclick=()=>openTheory(active-1);
 $("nextTopic").onclick=()=>openTheory(active+1);
 window.refreshCADHome=cards;window.returnCADHome=()=>setView("overview");
-if(guestAccess){$("guestBanner").classList.remove("app-hidden");syncStatus("Consulta sin verificar · Sin guardado en Supabase","error")}document.getElementById("hubSignOut").onclick=async()=>{
+if(window.IJRGuest&&!window.IJRCADAuth.authenticated)window.setGuestAccess(true)document.getElementById("hubSignOut").onclick=async()=>{
  await window.waitForCADSync();
  try{sessionStorage.removeItem("ijr-cad9-guest-v1")}catch{}
  await window.IJRCADAuth.signOut();window.location.replace("./")
