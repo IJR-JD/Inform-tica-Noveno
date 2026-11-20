@@ -6,7 +6,7 @@
 <title>Panel docente · Informática 9.º | IJR</title>
 <link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="cad-polish.css"><link rel="stylesheet" href="cad-accessibility.css">
 <link rel="stylesheet" href="docente.css">
-<script src="cad-email-auth.js"></script><script src="cad-progress-core.js"></script><script src="module-zero.js"></script>
+<script src="cad-email-auth.js"></script><script src="cad-progress-core.js"></script><script src="module-zero.js"></script><script src="cad-curriculum.js"></script>
 <script defer src="docente.js"></script>
 </head>
 <body>
@@ -38,6 +38,16 @@
 <p id="teacherDataStatus" role="status" aria-live="polite"></p>
 <div class="teacher-table-wrap"><table class="teacher-table"><thead><tr><th scope="col">Correo institucional</th><th scope="col">Diagnóstico</th><th scope="col">Nivel orientativo</th><th scope="col">Unidades CAD</th><th scope="col">Detalle</th></tr></thead><tbody id="teacherRows"></tbody></table></div>
 <section id="teacherDetail" class="teacher-detail app-hidden" aria-live="polite"><div class="teacher-detail-head"><h2 id="teacherDetailTitle"></h2><button id="teacherCloseDetail" class="button button-light" type="button">Cerrar detalle</button></div><p id="teacherDetailIntro"></p><div id="teacherDomainStats" class="teacher-domains"></div><h3>Recomendaciones</h3><div id="teacherRecommendations"></div><h3>Registro de las 26 unidades CAD</h3><div id="teacherUnitRecords" class="teacher-units"></div><details class="teacher-answer-review"><summary>Revisar respuestas del examen diagnóstico</summary><div id="teacherAnswers"></div></details></section>
+<section class="teacher-library" aria-labelledby="teacherLibraryTitle">
+ <p class="eyebrow">BIBLIOTECA DOCENTE · MATERIAL COMPLETO</p>
+ <h2 id="teacherLibraryTitle">Evaluaciones, solucionarios y guías</h2>
+ <p>Consulta las 24 preguntas del Módulo 0 con la clave y explicación pedagógica, y las 26 unidades CAD con teoría, prácticas y respuestas de comprobación. Disponible exclusivamente después de autenticar el rol docente.</p>
+ <div class="teacher-library-tabs">
+  <button type="button" class="button button-dark" id="teacherShowDiagnostic">Ver banco diagnóstico (24)</button>
+  <button type="button" class="button button-light" id="teacherShowLessons">Ver programa CAD (26)</button>
+ </div>
+ <div id="teacherLibraryList" class="teacher-library-list"></div>
+</section>
 </section>
 </main>
 <footer class="teacher-footer">Instituto Jorge Robledo · Consulta docente de solo lectura · Los resultados son orientativos y requieren interpretación pedagógica.</footer>
