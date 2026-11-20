@@ -104,18 +104,18 @@ test("institutional email login rejects external domains, malformed addresses an
  for(const email of ["test@gmail.com","9A-07","student@fakeijr.edu.co","student@ijr.edu.co.invalid","x @ijr.edu.co",""])assert.equal(Auth.validEmail(email),false);
  assert.equal(Auth.authenticated,false);
 });
-test("institutional SSO and SQL merge replace OTP while preserving Module 0",()=>{
+test("institutional email magic link and SQL merge preserve Module 0",()=>{
  const Auth=require("../cad-email-auth.js");
  assert.ok(Auth.URL.startsWith("https://"));
  assert.ok(Auth.SESSION_KEY.includes("auth-session"));
  assert.equal(Auth.DOMAIN,"ijr.edu.co");
- assert.equal(typeof Auth.beginInstitutionalSignIn,"function");
+ assert.equal(typeof Auth.sendInstitutionalLink,"function");
  assert.equal(typeof Auth.consumeOAuthRedirect,"function");
  assert.equal(typeof Auth.saveProgress,"function");
  const js=fs.readFileSync("cad-email-auth.js","utf8");
  assert.ok(js.includes("rpc/cad9_merge_course_progress"));
  assert.ok(js.includes("rpc/cad9_merge_diagnostic_draft"));
- assert.ok(!js.includes("/auth/v1/otp"));
+ assert.ok(js.includes("/auth/v1/otp?redirect_to="));
  assert.ok(!js.includes("/auth/v1/verify"));
  for(const id of ["diagnosticIdentity","diagnosticStudentCode","diagnosticSwitch","diagnosticExport","diagnosticNav","topicGrid","workshop"])
   assert.ok(html.includes('id="'+id+'"'),"Missing "+id);
@@ -131,12 +131,15 @@ test("all HTML routes share a single verified email entry and protected routes s
  assert.ok(login.includes('id="loginEmail"')&&!login.includes('id="loginOtp"'));
  assert.ok(login.includes('src="cad-email-auth.js"')&&login.includes('src="login.js"'));
  assert.ok(!login.includes('id="topicGrid"'));
+ assert.ok(login.includes('id="loginLinkSent"'));
+ assert.ok(!login.includes('Selecciona tu cuenta institucional de Google'));
+ assert.ok(!flow.includes('A.beginInstitutionalSignIn('));
  for(const source of [hub,teacher]){
   assert.ok(source.includes('src="hub-gate.js"'));
   assert.ok(source.includes('html:not([data-auth-ready="true"]) body'));
  }
  assert.ok(gate.includes('data-auth-ready')&&gate.includes('auth.init()'));
- assert.ok(flow.includes('A.beginInstitutionalSignIn(')&&flow.includes('A.validEmail('));
+ assert.ok(flow.includes('A.sendInstitutionalLink(')&&flow.includes('A.validEmail('));
  assert.ok(flow.includes('new Set(["hub.html","docente.html"])'));
  assert.ok(!flow.includes('eval('));
 });
