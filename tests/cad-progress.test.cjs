@@ -3,7 +3,7 @@ const assert=require("node:assert/strict");
 const fs=require("node:fs");
 const vm=require("node:vm");
 const P=require("../cad-progress-core.js");
-const html=fs.readFileSync("index.html","utf8");
+const html=fs.readFileSync("hub.html","utf8");
 const sandbox={window:{}};
 vm.runInNewContext(fs.readFileSync("cad-curriculum.js","utf8"),sandbox);
 const D=sandbox.window.CAD_CURRICULUM;
@@ -121,4 +121,23 @@ test("all modules retain content / assessment components and profile controls",(
   assert.ok(html.includes('id="'+id+'"'),"Missing "+id);
  for(const resource of ["module-zero.js","module-zero-visuals.js","module-zero.css","module-zero-ui.js"])
   assert.ok(html.includes(resource));
+});
+
+test("all HTML routes share a single verified email entry and protected routes stay hidden until authenticated",()=>{
+ const login=fs.readFileSync("index.html","utf8");
+ const hub=fs.readFileSync("hub.html","utf8");
+ const teacher=fs.readFileSync("docente.html","utf8");
+ const gate=fs.readFileSync("hub-gate.js","utf8");
+ const flow=fs.readFileSync("login.js","utf8");
+ assert.ok(login.includes('id="loginEmail"')&&login.includes('id="loginOtp"'));
+ assert.ok(login.includes('src="cad-email-auth.js"')&&login.includes('src="login.js"'));
+ assert.ok(!login.includes('id="topicGrid"'));
+ for(const source of [hub,teacher]){
+  assert.ok(source.includes('src="hub-gate.js"'));
+  assert.ok(source.includes('html:not([data-auth-ready="true"]) body'));
+ }
+ assert.ok(gate.includes('data-auth-ready')&&gate.includes('auth.init()'));
+ assert.ok(flow.includes('A.verifyOtp(')&&flow.includes('A.validEmail('));
+ assert.ok(flow.includes('new Set(["hub.html","docente.html"])'));
+ assert.ok(!flow.includes('eval('));
 });
