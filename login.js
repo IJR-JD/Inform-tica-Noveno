@@ -26,6 +26,13 @@ emailForm.addEventListener("submit",async event=>{
  if(!A.validEmail(email)){
   status("Solo se permite el correo institucional @"+A.DOMAIN+".","error");return;
  }
+ // Instant educational browsing is deliberately not an authenticated Supabase session.
+ // No student's records or teacher privileges are available from a typed address.
+ if(destination()==="hub.html"){
+  sessionStorage.setItem("ijr-cad9-guest-v1",JSON.stringify({email,createdAt:Date.now()}));
+  status("Abriendo los contenidos en modo consulta. Para guardar tu progreso deberás verificar tu correo.","success");
+  redirect();return;
+ }
  busy(true);status("Solicitando enlace de acceso al correo institucional…");
  try{
   await A.sendInstitutionalLink(email,destination());
